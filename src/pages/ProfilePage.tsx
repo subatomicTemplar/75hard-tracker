@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, LogOut, Bell, BellOff, Loader2, Save } from 'lucide-react';
+import { ArrowLeft, LogOut, Bell, BellOff, Loader2, Save, Plus } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
 import { supabase } from '../lib/supabase';
 import { compressImage } from '../lib/imageCompress';
 import { subscribeToPush } from '../lib/pushNotifications';
+import { createSeason } from '../lib/api';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { user, profile, signOut, refreshProfile } = useAuth();
-  const { refetchProfiles } = useData();
+  const { refetchProfiles, refetchSeasons } = useData();
 
   const [displayName, setDisplayName] = useState(profile?.display_name ?? '');
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url ?? '');
@@ -18,6 +19,9 @@ export default function ProfilePage() {
   const [toast, setToast] = useState<string | null>(null);
   const [pushEnabled, setPushEnabled] = useState(false);
   const [pushLoading, setPushLoading] = useState(false);
+  const [seasonName, setSeasonName] = useState('');
+  const [seasonStart, setSeasonStart] = useState('');
+  const [creatingSeason, setCreatingSeason] = useState(false);
 
   // Sync form when profile loads
   useEffect(() => {
@@ -140,6 +144,23 @@ export default function ProfilePage() {
     }
   }
 
+  async function handleCreateSeason() {
+    if (!seasonName.trim() || !seasonStart) return;
+    setCreatingSeason(true);
+    try {
+      await createSeason(seasonName.trim(), seasonStart);
+      await refetchSeasons();
+      setSeasonName('');
+      setSeasonStart('');
+      showToast('Season created!');
+    } catch (err) {
+      console.error('Failed to create season:', err);
+      showToast('Failed to create season.');
+    } finally {
+      setCreatingSeason(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -257,6 +278,41 @@ export default function ProfilePage() {
             )}
           </button>
         </div>
+      </div>
+
+      {/* New Season */}
+      <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-4 space-y-3">
+        <h2 className="text-sm font-bold text-white">New Season</h2>
+        <div className="space-y-2">
+          <input
+            type="text"
+            placeholder="Season name (e.g. Spring 2026)"
+            value={seasonName}
+            onChange={(e) => setSeasonName(e.target.value)}
+            className="w-full rounded-lg border border-neutral-800 bg-black px-3 py-2.5 text-white placeholder:text-neutral-500 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+          />
+          <label className="block text-xs text-neutral-400">Start date</label>
+          <input
+            type="date"
+            value={seasonStart}
+            onChange={(e) => setSeasonStart(e.target.value)}
+            className="w-full rounded-lg border border-neutral-800 bg-black px-3 py-2.5 text-white focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+          />
+          <p className="text-xs text-neutral-500">End date is auto-calculated (75 days).</p>
+        </div>
+        <button
+          type="button"
+          onClick={handleCreateSeason}
+          disabled={creatingSeason || !seasonName.trim() || !seasonStart}
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-red-600 py-2.5 text-sm font-bold text-black transition hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {creatingSeason ? (
+            <Loader2 size={16} className="animate-spin" />
+          ) : (
+            <Plus size={16} />
+          )}
+          Create Season
+        </button>
       </div>
 
       {/* Sign out */}

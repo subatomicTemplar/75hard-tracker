@@ -93,10 +93,113 @@
   animation: comboDust 1s ease-out forwards;
 }
 
+/* Username effects — flame burst, glitch shift, blackout flicker */
+@keyframes nameFlame {
+  0%, 100% {
+    text-shadow:
+      0 0 4px #ff4500,
+      0 0 11px #ff4500,
+      0 0 19px #ff0000,
+      0 0 40px #ff0000;
+  }
+  20% {
+    text-shadow:
+      0 0 10px #ff6600,
+      0 0 25px #ff4500,
+      0 0 40px #ff0000,
+      0 0 70px #ff0000,
+      0 -5px 8px rgba(255, 69, 0, 0.6);
+  }
+  50% {
+    text-shadow:
+      0 0 15px #ffaa00,
+      0 0 35px #ff6600,
+      0 0 50px #ff4500,
+      0 0 80px #ff0000,
+      0 -8px 12px rgba(255, 150, 0, 0.7);
+  }
+  80% {
+    text-shadow:
+      0 0 8px #ff4500,
+      0 0 20px #ff4500,
+      0 0 30px #ff0000,
+      0 0 55px #ff0000;
+  }
+}
+
+@keyframes nameGlitch {
+  0%, 100% { transform: translate(0, 0); opacity: 1; }
+  10% { transform: translate(-3px, 0); opacity: 0.8; }
+  20% { transform: translate(3px, 1px); opacity: 1; }
+  30% { transform: translate(-2px, -1px); opacity: 0.7; }
+  40% { transform: translate(2px, 0); opacity: 1; }
+  50% { transform: translate(-1px, 1px); opacity: 0.9; }
+  60% { transform: translate(1px, -1px); opacity: 1; }
+  70% { transform: translate(0, 0); opacity: 1; }
+}
+
+@keyframes nameBlackout {
+  0%, 100% {
+    color: #fff;
+    text-shadow:
+      0 0 4px #ff4500,
+      0 0 11px #ff4500,
+      0 0 19px #ff0000,
+      0 0 40px #ff0000;
+  }
+  15% {
+    color: #000;
+    text-shadow: none;
+  }
+  30% {
+    color: #fff;
+    text-shadow:
+      0 0 4px #ff4500,
+      0 0 11px #ff4500,
+      0 0 19px #ff0000,
+      0 0 40px #ff0000;
+  }
+  40% {
+    color: #000;
+    text-shadow: none;
+  }
+  55% {
+    color: #fff;
+    text-shadow:
+      0 0 4px #ff4500,
+      0 0 11px #ff4500,
+      0 0 19px #ff0000,
+      0 0 40px #ff0000;
+  }
+}
+
+.name-fire-text {
+  font-family: 'Metal Mania', cursive;
+  color: #fff;
+  text-shadow:
+    0 0 4px #ff4500,
+    0 0 11px #ff4500,
+    0 0 19px #ff0000,
+    0 0 40px #ff0000;
+}
+
+.name-effect-flame {
+  animation: nameFlame 0.8s ease-in-out 1;
+}
+
+.name-effect-glitch {
+  animation: nameGlitch 0.5s steps(1) 1;
+}
+
+.name-effect-blackout {
+  animation: nameBlackout 0.6s steps(1) 1;
+}
+
 /* Prison wall background */
 body {
   background-image: url('/background.png');
-  background-size: 512px 512px;
-  background-repeat: repeat;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
   background-attachment: fixed;
 }

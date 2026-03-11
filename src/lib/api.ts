@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 import { compressImage } from './imageCompress';
-import type { DailyEntry } from '../types';
+import type { DailyEntry, Season } from '../types';
 
 export async function upsertDailyEntry(entry: Partial<DailyEntry>): Promise<DailyEntry> {
   const { data, error } = await supabase
@@ -35,6 +35,37 @@ export async function uploadProgressPhoto(
     .getPublicUrl(path);
 
   return `${urlData.publicUrl}?t=${Date.now()}`;
+}
+
+export async function createSeason(
+  name: string,
+  startDate: string
+): Promise<Season> {
+  // Calculate end date: 75 days from start (start + 74 days inclusive)
+  const start = new Date(startDate + 'T00:00:00');
+  const end = new Date(start);
+  end.setDate(end.getDate() + 74);
+  const endDate = end.toISOString().split('T')[0];
+
+  // Unset any existing current season
+  await supabase
+    .from('seasons')
+    .update({ is_current: false })
+    .eq('is_current', true);
+
+  const { data, error } = await supabase
+    .from('seasons')
+    .insert({
+      name,
+      start_date: startDate,
+      end_date: endDate,
+      is_current: true,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as Season;
 }
 
 export async function savePushSubscription(

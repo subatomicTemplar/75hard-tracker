@@ -1,5 +1,6 @@
 import { Link, Outlet } from 'react-router-dom';
 import { Bell, User } from 'lucide-react';
+import PullToRefresh from './PullToRefresh';
 
 export default function Layout() {
   return (
@@ -31,7 +32,9 @@ export default function Layout() {
       </header>
 
       <main className="mx-auto max-w-[640px] px-4 py-4">
-        <Outlet />
+        <PullToRefresh>
+          <Outlet />
+        </PullToRefresh>
       </main>
     </div>
   );

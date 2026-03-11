@@ -9,6 +9,7 @@ interface DataContextType {
   loading: boolean;
   error: string | null;
   refetchProfiles: () => Promise<void>;
+  refetchSeasons: () => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -67,6 +68,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setProfiles(data ?? []);
   }, []);
 
+  const refetchSeasons = useCallback(async () => {
+    const { data } = await supabase
+      .from('seasons')
+      .select('*')
+      .order('start_date', { ascending: false });
+    setSeasons(data ?? []);
+  }, []);
+
   return (
     <DataContext.Provider
       value={{
@@ -75,6 +84,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         loading: seasonsLoading || profilesLoading,
         error,
         refetchProfiles,
+        refetchSeasons,
       }}
     >
       {children}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   ChevronDown,
   ChevronUp,
@@ -70,8 +70,40 @@ function workoutSummary(
   return parts.join(' ');
 }
 
+const EFFECTS = ['name-effect-flame', 'name-effect-glitch', 'name-effect-blackout'] as const;
+
+function useRandomNameEffect() {
+  const [effectClass, setEffectClass] = useState('');
+
+  const triggerEffect = useCallback(() => {
+    // 70% chance of no effect, 30% chance of one of the three
+    if (Math.random() > 0.3) return;
+    const effect = EFFECTS[Math.floor(Math.random() * EFFECTS.length)];
+    setEffectClass(effect);
+  }, []);
+
+  // Clear effect class when animation ends so it can re-trigger
+  const onAnimationEnd = useCallback(() => setEffectClass(''), []);
+
+  useEffect(() => {
+    // Random interval between 3-8 seconds, unique per tile
+    const schedule = () => {
+      const delay = 3000 + Math.random() * 5000;
+      return setTimeout(() => {
+        triggerEffect();
+        timerId = schedule();
+      }, delay);
+    };
+    let timerId = schedule();
+    return () => clearTimeout(timerId);
+  }, [triggerEffect]);
+
+  return { effectClass, onAnimationEnd };
+}
+
 export default function UserTile({ profile, entry, seasonId }: UserTileProps) {
   const [expanded, setExpanded] = useState(false);
+  const { effectClass, onAnimationEnd } = useRandomNameEffect();
 
   return (
     <div className={`overflow-hidden rounded-xl border-2 bg-neutral-900/90 ${borderColor(entry)}`}>
@@ -88,7 +120,12 @@ export default function UserTile({ profile, entry, seasonId }: UserTileProps) {
             {getInitials(profile.display_name)}
           </div>
         )}
-        <span className="text-lg font-semibold text-white">{profile.display_name}</span>
+        <span
+          className={`name-fire-text text-lg tracking-wide ${effectClass}`}
+          onAnimationEnd={onAnimationEnd}
+        >
+          {profile.display_name}
+        </span>
       </div>
 
       {/* Photo */}
