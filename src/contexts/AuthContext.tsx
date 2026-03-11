@@ -38,8 +38,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let initialised = false;
+
     // Check for existing session on mount
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (initialised) return;
+      initialised = true;
       setSession(session);
       setUser(session?.user ?? null);
 
@@ -50,6 +54,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setLoading(false);
     });
+
+    // Safety timeout – stop loading after 5 s even if getSession hangs
+    const timeout = setTimeout(() => {
+      if (!initialised) {
+        initialised = true;
+        setLoading(false);
+      }
+    }, 5000);
 
     // Subscribe to auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -64,11 +76,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setProfile(null);
         }
 
-        setLoading(false);
+        // Only clear loading if the initial getSession hasn't done it yet
+        if (!initialised) {
+          initialised = true;
+          setLoading(false);
+        }
       }
     );
 
     return () => {
+      clearTimeout(timeout);
       subscription.unsubscribe();
     };
   }, []);

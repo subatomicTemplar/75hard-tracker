@@ -11,11 +11,15 @@ import {
 } from 'lucide-react';
 import type { Profile, DailyEntry } from '../types';
 import UserAnalytics from './UserAnalytics';
+import ComplianceBarrel from './ComplianceBarrel';
+import { useUserEntries } from '../hooks/useUserEntries';
+import { calcCompliance } from '../lib/complianceCalc';
 
 interface UserTileProps {
   profile: Profile;
   entry: DailyEntry | null;
   seasonId: string;
+  seasonStartDate: string;
 }
 
 function getInitials(name: string): string {
@@ -101,9 +105,11 @@ function useRandomNameEffect() {
   return { effectClass, onAnimationEnd };
 }
 
-export default function UserTile({ profile, entry, seasonId }: UserTileProps) {
+export default function UserTile({ profile, entry, seasonId, seasonStartDate }: UserTileProps) {
   const [expanded, setExpanded] = useState(false);
   const { effectClass, onAnimationEnd } = useRandomNameEffect();
+  const { entries: allEntries } = useUserEntries(profile.id, seasonId);
+  const compliance = calcCompliance(allEntries, seasonStartDate);
 
   return (
     <div className={`overflow-hidden rounded-xl border-2 bg-neutral-900/90 ${borderColor(entry)}`}>
@@ -126,6 +132,9 @@ export default function UserTile({ profile, entry, seasonId }: UserTileProps) {
         >
           {profile.display_name}
         </span>
+        <div className="ml-auto">
+          <ComplianceBarrel percentage={compliance} />
+        </div>
       </div>
 
       {/* Photo */}

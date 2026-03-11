@@ -149,6 +149,7 @@ export default function MainPage() {
                   profile={profile}
                   entry={entry}
                   seasonId={activeSeason.id}
+                  seasonStartDate={activeSeason.start_date}
                 />
               );
             })
