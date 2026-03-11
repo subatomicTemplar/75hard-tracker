@@ -1,16 +1,20 @@
 import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { UserPlus, Mail, Lock, User, AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function SignUpPage() {
-  const { signUp } = useAuth();
+  const { signUp, session } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  if (session) {
+    return <Navigate to="/" replace />;
+  }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

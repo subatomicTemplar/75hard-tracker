@@ -1,18 +1,16 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Plus, Loader2 } from 'lucide-react';
 import SeasonPicker from '../components/SeasonPicker';
 import DateNavigator from '../components/DateNavigator';
 import UserTile from '../components/UserTile';
-import { useSeasons } from '../hooks/useSeasons';
-import { useProfiles } from '../hooks/useProfiles';
+import { useData } from '../contexts/DataContext';
 import { useDailyEntries } from '../hooks/useDailyEntries';
 
 export default function MainPage() {
   const navigate = useNavigate();
-  const { seasons, loading: seasonsLoading } = useSeasons();
-  const { profiles, loading: profilesLoading } = useProfiles();
+  const { seasons, profiles, loading: dataLoading } = useData();
 
   // Default to current season
   const currentSeason = useMemo(
@@ -47,11 +45,11 @@ export default function MainPage() {
   const effectiveSeasonId = activeSeason?.id;
 
   // Sync selectedSeasonId once seasons load
-  useMemo(() => {
+  useEffect(() => {
     if (currentSeason && !selectedSeasonId) {
       setSelectedSeasonId(currentSeason.id);
     }
-  }, [currentSeason]);
+  }, [currentSeason, selectedSeasonId]);
 
   const { entries, loading: entriesLoading } = useDailyEntries(effectiveSeasonId, activeDate);
 
@@ -64,7 +62,7 @@ export default function MainPage() {
     setSelectedDate(date);
   }
 
-  const isLoading = seasonsLoading || profilesLoading;
+  const isLoading = dataLoading;
 
   if (isLoading) {
     return (

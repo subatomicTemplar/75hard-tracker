@@ -346,16 +346,29 @@ export default function EntryForm({
             </button>
           </div>
         ) : (
-          <label className="flex h-32 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-600 transition hover:border-green-500 hover:bg-slate-800">
-            <Camera size={28} className="text-slate-500" />
-            <span className="mt-1 text-sm text-slate-500">Tap to add photo</span>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handlePhotoChange}
-              className="hidden"
-            />
-          </label>
+          <div className="flex gap-3">
+            <label className="flex flex-1 h-32 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-600 transition hover:border-green-500 hover:bg-slate-800">
+              <Camera size={28} className="text-slate-500" />
+              <span className="mt-1 text-sm text-slate-500">Take photo</span>
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handlePhotoChange}
+                className="hidden"
+              />
+            </label>
+            <label className="flex flex-1 h-32 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-600 transition hover:border-green-500 hover:bg-slate-800">
+              <Camera size={28} className="text-slate-500" />
+              <span className="mt-1 text-sm text-slate-500">Choose from library</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoChange}
+                className="hidden"
+              />
+            </label>
+          </div>
         )}
       </fieldset>
 

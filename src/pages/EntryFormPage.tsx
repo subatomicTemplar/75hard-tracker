@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { useSeasons } from '../hooks/useSeasons';
+import { useData } from '../contexts/DataContext';
 import { useDailyEntries } from '../hooks/useDailyEntries';
 import { upsertDailyEntry, uploadProgressPhoto } from '../lib/api';
 import { supabase } from '../lib/supabase';
@@ -18,7 +18,7 @@ export default function EntryFormPage() {
   const todayStr = format(new Date(), 'yyyy-MM-dd');
   const activeDate = date ?? todayStr;
 
-  const { seasons, loading: seasonsLoading } = useSeasons();
+  const { seasons } = useData();
 
   // Default to current season
   const activeSeason = useMemo(
@@ -107,7 +107,7 @@ export default function EntryFormPage() {
     }
   }
 
-  const isLoading = seasonsLoading || entriesLoading;
+  const isLoading = entriesLoading;
 
   if (isLoading) {
     return (
