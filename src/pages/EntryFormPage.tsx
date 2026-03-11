@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
 import { ArrowLeft, Loader2 } from 'lucide-react';
@@ -8,6 +8,8 @@ import { useDailyEntries } from '../hooks/useDailyEntries';
 import { upsertDailyEntry, uploadProgressPhoto } from '../lib/api';
 import { supabase } from '../lib/supabase';
 import EntryForm from '../components/EntryForm';
+import ComboCelebration from '../components/ComboCelebration';
+import { isFullCombo, comboSeenKey } from '../lib/completionCheck';
 import type { EntryFormData } from '../components/EntryForm';
 
 export default function EntryFormPage() {
@@ -18,7 +20,7 @@ export default function EntryFormPage() {
   const todayStr = format(new Date(), 'yyyy-MM-dd');
   const activeDate = date ?? todayStr;
 
-  const { seasons } = useData();
+  const { seasons, profiles } = useData();
 
   // Default to current season
   const activeSeason = useMemo(
@@ -61,6 +63,12 @@ export default function EntryFormPage() {
 
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [showCombo, setShowCombo] = useState(false);
+
+  const handleComboComplete = useCallback(() => {
+    setShowCombo(false);
+    navigate('/');
+  }, [navigate]);
 
   async function handleSubmit(formData: EntryFormData) {
     if (!user || !activeSeason) return;
@@ -96,8 +104,30 @@ export default function EntryFormPage() {
         photo_url: photoUrl,
       });
 
-      setToast('Entry saved successfully!');
-      setTimeout(() => navigate('/'), 1200);
+      // Re-fetch all entries for this date to check combo
+      const { data: freshEntries } = await supabase
+        .from('daily_entries')
+        .select('*')
+        .eq('season_id', activeSeason.id)
+        .eq('entry_date', activeDate);
+
+      const allEntries = freshEntries ?? [];
+      const comboKey = comboSeenKey(activeSeason.id, activeDate);
+
+      if (isFullCombo(profiles, allEntries) && !localStorage.getItem(comboKey)) {
+        // Full combo! Show celebration (no entry sound)
+        localStorage.setItem(comboKey, '1');
+        setToast('Entry saved successfully!');
+        setShowCombo(true);
+        // Navigation happens when combo completes
+      } else {
+        // Normal save — play entry sound
+        const entrySound = new Audio('/entrysound.mp3');
+        entrySound.play().catch(() => {});
+
+        setToast('Entry saved successfully!');
+        setTimeout(() => navigate('/'), 1200);
+      }
     } catch (err) {
       console.error('Failed to save entry:', err);
       setToast('Failed to save entry. Please try again.');
@@ -112,7 +142,7 @@ export default function EntryFormPage() {
   if (isLoading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <Loader2 size={32} className="animate-spin text-green-500" />
+        <Loader2 size={32} className="animate-spin text-red-500" />
       </div>
     );
   }
@@ -120,55 +150,58 @@ export default function EntryFormPage() {
   if (!activeSeason) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 text-center">
-        <p className="text-lg font-semibold text-slate-50">No Season Found</p>
-        <p className="text-sm text-slate-400">Cannot log an entry without an active season.</p>
+        <p className="text-lg font-semibold text-white">No Season Found</p>
+        <p className="text-sm text-neutral-400">Cannot log an entry without an active season.</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => navigate('/')}
-          className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-800 hover:text-slate-50"
-          aria-label="Back to main page"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-slate-50">
-            {existingEntry ? 'Edit Entry' : 'New Entry'}
-          </h1>
-          <p className="text-sm text-slate-400">
-            {format(parseISO(activeDate), 'EEEE, MMMM d, yyyy')}
-          </p>
+    <>
+      {showCombo && <ComboCelebration onComplete={handleComboComplete} />}
+      <div className="space-y-4">
+        {/* Header */}
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="rounded-lg p-2 text-neutral-400 transition hover:bg-neutral-800 hover:text-white"
+            aria-label="Back to main page"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <div>
+            <h1 className="text-lg font-bold text-white">
+              {existingEntry ? 'Edit Entry' : 'New Entry'}
+            </h1>
+            <p className="text-sm text-neutral-400">
+              {format(parseISO(activeDate), 'EEEE, MMMM d, yyyy')}
+            </p>
+          </div>
         </div>
+
+        {/* Entry form */}
+        <EntryForm
+          initialEntry={existingEntry}
+          seasonId={activeSeason.id}
+          previousBookTitle={previousBookTitle}
+          onSubmit={handleSubmit}
+          submitting={submitting}
+        />
+
+        {/* Toast */}
+        {toast && (
+          <div
+            className={`fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-xl px-5 py-3 text-sm font-medium shadow-lg transition-all ${
+              toast.includes('success')
+                ? 'bg-red-600 text-white'
+                : 'bg-red-500 text-white'
+            }`}
+          >
+            {toast}
+          </div>
+        )}
       </div>
-
-      {/* Entry form */}
-      <EntryForm
-        initialEntry={existingEntry}
-        seasonId={activeSeason.id}
-        previousBookTitle={previousBookTitle}
-        onSubmit={handleSubmit}
-        submitting={submitting}
-      />
-
-      {/* Toast */}
-      {toast && (
-        <div
-          className={`fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-xl px-5 py-3 text-sm font-medium shadow-lg transition-all ${
-            toast.includes('success')
-              ? 'bg-green-500 text-slate-900'
-              : 'bg-red-500 text-white'
-          }`}
-        >
-          {toast}
-        </div>
-      )}
-    </div>
+    </>
   );
 }
