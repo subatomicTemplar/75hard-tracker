@@ -2,13 +2,15 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, LogOut, Bell, BellOff, Loader2, Save } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useData } from '../contexts/DataContext';
 import { supabase } from '../lib/supabase';
 import { compressImage } from '../lib/imageCompress';
 import { subscribeToPush } from '../lib/pushNotifications';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, refreshProfile } = useAuth();
+  const { refetchProfiles } = useData();
 
   const [displayName, setDisplayName] = useState(profile?.display_name ?? '');
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url ?? '');
@@ -54,6 +56,9 @@ export default function ProfilePage() {
         .eq('id', user.id);
 
       if (error) throw error;
+
+      // Refresh profile data across the app
+      await Promise.all([refreshProfile(), refetchProfiles()]);
 
       showToast('Profile updated!');
     } catch (err) {
