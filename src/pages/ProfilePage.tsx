@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, LogOut, Bell, BellOff, Loader2, Save } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import { compressImage } from '../lib/imageCompress';
 import { subscribeToPush } from '../lib/pushNotifications';
 
 export default function ProfilePage() {
@@ -111,10 +112,11 @@ export default function ProfilePage() {
 
     setSaving(true);
     try {
-      const path = `${user.id}/avatar.${file.name.split('.').pop()}`;
+      const compressed = await compressImage(file);
+      const path = `${user.id}/avatar.jpg`;
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(path, file, { contentType: file.type, upsert: true });
+        .upload(path, compressed, { contentType: 'image/jpeg', upsert: true });
 
       if (uploadError) throw uploadError;
 
