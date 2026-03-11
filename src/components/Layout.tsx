@@ -5,6 +5,11 @@ import PullToRefresh from './PullToRefresh';
 export default function Layout() {
   return (
     <div className="min-h-screen text-white">
+      {/* Fixed background image — stays still while content scrolls */}
+      <div
+        className="fixed inset-0 -z-10 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/background.png')" }}
+      />
       <header className="sticky top-0 z-50 border-b border-neutral-800 bg-black/90 backdrop-blur">
         <div className="mx-auto flex max-w-[640px] items-center justify-between px-4 py-3">
           <Link to="/" className="fire-text text-2xl tracking-widest">

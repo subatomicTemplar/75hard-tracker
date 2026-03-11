@@ -72,7 +72,7 @@ Deno.serve(async () => {
     // Get all push subscriptions
     const { data: subscriptions } = await supabase
       .from("push_subscriptions")
-      .select("user_id, endpoint, p256dh, auth");
+      .select("user_id, endpoint, keys_p256dh, keys_auth");
 
     if (!subscriptions || subscriptions.length === 0) {
       return new Response(
@@ -122,7 +122,7 @@ Deno.serve(async () => {
 
       const pushSubscription = {
         endpoint: sub.endpoint,
-        keys: { p256dh: sub.p256dh, auth: sub.auth },
+        keys: { p256dh: sub.keys_p256dh, auth: sub.keys_auth },
       };
 
       try {

@@ -195,11 +195,9 @@
   animation: nameBlackout 0.6s steps(1) 1;
 }
 
-/* Prison wall background */
+/* Prison wall background — handled by a fixed div in Layout.tsx
+   so it stays truly still on mobile Safari (background-attachment: fixed
+   doesn't work on iOS). */
 body {
-  background-image: url('/background.png');
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-attachment: fixed;
+  background-color: #000;
 }

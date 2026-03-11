@@ -76,8 +76,8 @@ export async function savePushSubscription(
     {
       user_id: userId,
       endpoint: sub.endpoint,
-      p256dh: sub.keys.p256dh,
-      auth: sub.keys.auth,
+      keys_p256dh: sub.keys.p256dh,
+      keys_auth: sub.keys.auth,
     },
     { onConflict: 'user_id' }
   );
