@@ -82,7 +82,7 @@ export default function EntryForm({
 
   function clearPhoto() {
     setPhoto(null);
-    setPhotoPreview(initialEntry?.photo_url ?? null);
+    setPhotoPreview(null);
   }
 
   async function handleSubmit(e: React.FormEvent) {
