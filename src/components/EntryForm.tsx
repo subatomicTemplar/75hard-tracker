@@ -110,7 +110,7 @@ export default function EntryForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Weight */}
       <fieldset className="space-y-1.5">
-        <label htmlFor="weight" className="block text-sm font-medium text-slate-300">
+        <label htmlFor="weight" className="block text-sm font-medium text-neutral-300">
           Weight (lbs)
         </label>
         <input
@@ -122,28 +122,28 @@ export default function EntryForm({
           value={weightLbs}
           onChange={(e) => setWeightLbs(e.target.value)}
           placeholder="e.g. 185.0"
-          className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2.5 text-slate-50 placeholder:text-slate-500 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+          className="w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2.5 text-white placeholder:text-white0 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
         />
       </fieldset>
 
       {/* Water */}
-      <fieldset className="rounded-xl border border-slate-700 bg-slate-800/50 p-4">
+      <fieldset className="rounded-xl border border-neutral-800 bg-neutral-900/80 p-4">
         <WaterBottle waterOz={waterOz} onChange={setWaterOz} />
       </fieldset>
 
       {/* Workout 1 */}
-      <fieldset className="space-y-3 rounded-xl border border-slate-700 bg-slate-800/50 p-4">
-        <legend className="text-sm font-semibold text-green-400">Workout 1</legend>
+      <fieldset className="space-y-3 rounded-xl border border-neutral-800 bg-neutral-900/80 p-4">
+        <legend className="text-sm font-semibold text-red-400">Workout 1</legend>
 
         <div>
-          <label htmlFor="w1type" className="block text-xs font-medium text-slate-400 mb-1">
+          <label htmlFor="w1type" className="block text-xs font-medium text-neutral-400 mb-1">
             Type
           </label>
           <select
             id="w1type"
             value={workout1Type}
             onChange={(e) => setWorkout1Type(e.target.value)}
-            className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2.5 text-slate-50 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+            className="w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2.5 text-white focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
           >
             <option value="">Select type...</option>
             {WORKOUT_TYPES.map((t) => (
@@ -160,8 +160,8 @@ export default function EntryForm({
             onClick={() => setWorkout1Outdoor(!workout1Outdoor)}
             className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition ${
               workout1Outdoor
-                ? 'border-green-500 bg-green-500/20 text-green-400'
-                : 'border-slate-700 bg-slate-800 text-slate-400'
+                ? 'border-red-500 bg-red-600/20 text-red-400'
+                : 'border-neutral-800 bg-neutral-900 text-neutral-400'
             }`}
           >
             <Sun size={16} />
@@ -170,7 +170,7 @@ export default function EntryForm({
         </div>
 
         <div>
-          <label htmlFor="w1dur" className="block text-xs font-medium text-slate-400 mb-1">
+          <label htmlFor="w1dur" className="block text-xs font-medium text-neutral-400 mb-1">
             Duration (minutes)
           </label>
           <input
@@ -181,12 +181,12 @@ export default function EntryForm({
             value={workout1Duration}
             onChange={(e) => setWorkout1Duration(e.target.value)}
             placeholder="45"
-            className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2.5 text-slate-50 placeholder:text-slate-500 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+            className="w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2.5 text-white placeholder:text-white0 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
           />
         </div>
 
         <div>
-          <label htmlFor="w1notes" className="block text-xs font-medium text-slate-400 mb-1">
+          <label htmlFor="w1notes" className="block text-xs font-medium text-neutral-400 mb-1">
             Notes
           </label>
           <input
@@ -195,24 +195,24 @@ export default function EntryForm({
             value={workout1Notes}
             onChange={(e) => setWorkout1Notes(e.target.value)}
             placeholder="Optional notes..."
-            className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2.5 text-slate-50 placeholder:text-slate-500 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+            className="w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2.5 text-white placeholder:text-white0 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
           />
         </div>
       </fieldset>
 
       {/* Workout 2 */}
-      <fieldset className="space-y-3 rounded-xl border border-slate-700 bg-slate-800/50 p-4">
-        <legend className="text-sm font-semibold text-green-400">Workout 2</legend>
+      <fieldset className="space-y-3 rounded-xl border border-neutral-800 bg-neutral-900/80 p-4">
+        <legend className="text-sm font-semibold text-red-400">Workout 2</legend>
 
         <div>
-          <label htmlFor="w2type" className="block text-xs font-medium text-slate-400 mb-1">
+          <label htmlFor="w2type" className="block text-xs font-medium text-neutral-400 mb-1">
             Type
           </label>
           <select
             id="w2type"
             value={workout2Type}
             onChange={(e) => setWorkout2Type(e.target.value)}
-            className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2.5 text-slate-50 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+            className="w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2.5 text-white focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
           >
             <option value="">Select type...</option>
             {WORKOUT_TYPES.map((t) => (
@@ -229,8 +229,8 @@ export default function EntryForm({
             onClick={() => setWorkout2Outdoor(!workout2Outdoor)}
             className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition ${
               workout2Outdoor
-                ? 'border-green-500 bg-green-500/20 text-green-400'
-                : 'border-slate-700 bg-slate-800 text-slate-400'
+                ? 'border-red-500 bg-red-600/20 text-red-400'
+                : 'border-neutral-800 bg-neutral-900 text-neutral-400'
             }`}
           >
             <Sun size={16} />
@@ -239,7 +239,7 @@ export default function EntryForm({
         </div>
 
         <div>
-          <label htmlFor="w2dur" className="block text-xs font-medium text-slate-400 mb-1">
+          <label htmlFor="w2dur" className="block text-xs font-medium text-neutral-400 mb-1">
             Duration (minutes)
           </label>
           <input
@@ -250,12 +250,12 @@ export default function EntryForm({
             value={workout2Duration}
             onChange={(e) => setWorkout2Duration(e.target.value)}
             placeholder="45"
-            className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2.5 text-slate-50 placeholder:text-slate-500 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+            className="w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2.5 text-white placeholder:text-white0 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
           />
         </div>
 
         <div>
-          <label htmlFor="w2notes" className="block text-xs font-medium text-slate-400 mb-1">
+          <label htmlFor="w2notes" className="block text-xs font-medium text-neutral-400 mb-1">
             Notes
           </label>
           <input
@@ -264,17 +264,17 @@ export default function EntryForm({
             value={workout2Notes}
             onChange={(e) => setWorkout2Notes(e.target.value)}
             placeholder="Optional notes..."
-            className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2.5 text-slate-50 placeholder:text-slate-500 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+            className="w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2.5 text-white placeholder:text-white0 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
           />
         </div>
       </fieldset>
 
       {/* Reading */}
-      <fieldset className="space-y-3 rounded-xl border border-slate-700 bg-slate-800/50 p-4">
-        <legend className="text-sm font-semibold text-green-400">Reading</legend>
+      <fieldset className="space-y-3 rounded-xl border border-neutral-800 bg-neutral-900/80 p-4">
+        <legend className="text-sm font-semibold text-red-400">Reading</legend>
 
         <div>
-          <label htmlFor="pages" className="block text-xs font-medium text-slate-400 mb-1">
+          <label htmlFor="pages" className="block text-xs font-medium text-neutral-400 mb-1">
             Pages Read
           </label>
           <input
@@ -284,12 +284,12 @@ export default function EntryForm({
             max="500"
             value={pagesRead}
             onChange={(e) => setPagesRead(e.target.value)}
-            className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2.5 text-slate-50 placeholder:text-slate-500 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+            className="w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2.5 text-white placeholder:text-white0 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
           />
         </div>
 
         <div>
-          <label htmlFor="book" className="block text-xs font-medium text-slate-400 mb-1">
+          <label htmlFor="book" className="block text-xs font-medium text-neutral-400 mb-1">
             Book Title
           </label>
           <input
@@ -298,20 +298,20 @@ export default function EntryForm({
             value={bookTitle}
             onChange={(e) => setBookTitle(e.target.value)}
             placeholder="What are you reading?"
-            className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2.5 text-slate-50 placeholder:text-slate-500 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+            className="w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2.5 text-white placeholder:text-white0 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
           />
         </div>
       </fieldset>
 
       {/* Diet */}
-      <fieldset className="rounded-xl border border-slate-700 bg-slate-800/50 p-4">
+      <fieldset className="rounded-xl border border-neutral-800 bg-neutral-900/80 p-4">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-semibold text-green-400">Diet Followed</span>
+          <span className="text-sm font-semibold text-red-400">Diet Followed</span>
           <button
             type="button"
             onClick={() => setDietFollowed(!dietFollowed)}
             className={`relative h-7 w-12 rounded-full transition-colors ${
-              dietFollowed ? 'bg-green-500' : 'bg-slate-600'
+              dietFollowed ? 'bg-red-600' : 'bg-neutral-700'
             }`}
             role="switch"
             aria-checked={dietFollowed}
@@ -326,8 +326,8 @@ export default function EntryForm({
       </fieldset>
 
       {/* Progress Photo */}
-      <fieldset className="space-y-3 rounded-xl border border-slate-700 bg-slate-800/50 p-4">
-        <legend className="text-sm font-semibold text-green-400">Progress Photo</legend>
+      <fieldset className="space-y-3 rounded-xl border border-neutral-800 bg-neutral-900/80 p-4">
+        <legend className="text-sm font-semibold text-red-400">Progress Photo</legend>
 
         {photoPreview ? (
           <div className="relative">
@@ -339,7 +339,7 @@ export default function EntryForm({
             <button
               type="button"
               onClick={clearPhoto}
-              className="absolute top-2 right-2 rounded-full bg-slate-900/80 p-1.5 text-slate-300 transition hover:bg-slate-900 hover:text-white"
+              className="absolute top-2 right-2 rounded-full bg-slate-900/80 p-1.5 text-neutral-300 transition hover:bg-slate-900 hover:text-white"
               aria-label="Remove photo"
             >
               <X size={16} />
@@ -347,9 +347,9 @@ export default function EntryForm({
           </div>
         ) : (
           <div className="flex gap-3">
-            <label className="flex flex-1 h-32 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-600 transition hover:border-green-500 hover:bg-slate-800">
-              <Camera size={28} className="text-slate-500" />
-              <span className="mt-1 text-sm text-slate-500">Take photo</span>
+            <label className="flex flex-1 h-32 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-neutral-700 transition hover:border-red-500 hover:bg-neutral-900">
+              <Camera size={28} className="text-white0" />
+              <span className="mt-1 text-sm text-white0">Take photo</span>
               <input
                 type="file"
                 accept="image/*"
@@ -358,9 +358,9 @@ export default function EntryForm({
                 className="hidden"
               />
             </label>
-            <label className="flex flex-1 h-32 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-600 transition hover:border-green-500 hover:bg-slate-800">
-              <Camera size={28} className="text-slate-500" />
-              <span className="mt-1 text-sm text-slate-500">Choose from library</span>
+            <label className="flex flex-1 h-32 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-neutral-700 transition hover:border-red-500 hover:bg-neutral-900">
+              <Camera size={28} className="text-white0" />
+              <span className="mt-1 text-sm text-white0">Choose from library</span>
               <input
                 type="file"
                 accept="image/*"
@@ -376,7 +376,7 @@ export default function EntryForm({
       <button
         type="submit"
         disabled={submitting}
-        className="w-full rounded-xl bg-green-500 py-3 text-center font-bold text-slate-900 transition hover:bg-green-400 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full rounded-xl bg-red-600 py-3 text-center font-bold text-black transition hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {submitting ? 'Saving...' : 'Save Entry'}
       </button>

@@ -22,7 +22,7 @@ export default function WaterBottle({ waterOz, onChange }: WaterBottleProps) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-4 rounded-xl border border-slate-700 bg-slate-800 p-4">
+    <div className="flex flex-col items-center gap-4 rounded-xl border border-neutral-800 bg-neutral-900 p-4">
       {/* Increment selector */}
       <div className="flex flex-wrap justify-center gap-1.5">
         {INCREMENT_OPTIONS.map((oz) => (
@@ -33,7 +33,7 @@ export default function WaterBottle({ waterOz, onChange }: WaterBottleProps) {
             className={`rounded-full px-3 py-1 text-xs font-medium transition ${
               increment === oz
                 ? 'bg-blue-500 text-white'
-                : 'bg-slate-700 text-slate-400 hover:bg-slate-600 hover:text-slate-50'
+                : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white'
             }`}
           >
             {oz}oz
@@ -74,8 +74,8 @@ export default function WaterBottle({ waterOz, onChange }: WaterBottleProps) {
       </div>
 
       {/* Current / target display */}
-      <p className={`text-center text-lg font-bold ${targetMet ? 'text-green-400' : 'text-blue-400'}`}>
-        {waterOz} <span className="text-slate-400 font-normal text-sm">/ 128 oz</span>
+      <p className={`text-center text-lg font-bold ${targetMet ? 'text-red-400' : 'text-blue-400'}`}>
+        {waterOz} <span className="text-neutral-400 font-normal text-sm">/ 128 oz</span>
       </p>
 
       {/* +/- buttons */}
@@ -84,13 +84,13 @@ export default function WaterBottle({ waterOz, onChange }: WaterBottleProps) {
           type="button"
           onClick={remove}
           disabled={waterOz <= 0}
-          className="flex h-12 w-12 items-center justify-center rounded-full border border-slate-700 bg-slate-700/60 text-slate-400 transition hover:bg-slate-600 hover:text-slate-50 disabled:opacity-30"
+          className="flex h-12 w-12 items-center justify-center rounded-full border border-neutral-800 bg-neutral-800/60 text-neutral-400 transition hover:bg-neutral-700 hover:text-white disabled:opacity-30"
           aria-label={`Remove ${increment} oz`}
         >
           <Minus size={20} />
         </button>
 
-        <span className="min-w-[3rem] text-center text-sm text-slate-400">
+        <span className="min-w-[3rem] text-center text-sm text-neutral-400">
           {increment}oz
         </span>
 
