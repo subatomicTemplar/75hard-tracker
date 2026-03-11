@@ -67,9 +67,9 @@ export default function WaterBottle({ waterOz, onChange }: WaterBottleProps) {
             className="transition-all duration-300"
           />
 
-          {/* Target line at 128 oz */}
-          <line x1="10" y1="45" x2="90" y2="45" stroke="#22c55e" strokeWidth="1.5" strokeDasharray="4 2" />
-          <text x="93" y="48" fontSize="8" fill="#22c55e" textAnchor="start">128</text>
+          {/* Target line at 128 oz (top of fill area) */}
+          <line x1="10" y1="41" x2="90" y2="41" stroke="#22c55e" strokeWidth="1.5" strokeDasharray="4 2" />
+          <text x="93" y="44" fontSize="8" fill="#22c55e" textAnchor="start">128</text>
         </svg>
       </div>
 

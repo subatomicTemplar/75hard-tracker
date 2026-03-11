@@ -41,8 +41,8 @@ export interface PushSubscriptionRecord {
   id: string;
   user_id: string;
   endpoint: string;
-  keys_p256dh: string;
-  keys_auth: string;
+  p256dh: string;
+  auth: string;
 }
 
 export const WORKOUT_TYPES = [

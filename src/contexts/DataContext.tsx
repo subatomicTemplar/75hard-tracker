@@ -7,6 +7,7 @@ interface DataContextType {
   seasons: Season[];
   profiles: Profile[];
   loading: boolean;
+  error: string | null;
   refetchProfiles: () => Promise<void>;
 }
 
@@ -18,6 +19,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [seasonsLoading, setSeasonsLoading] = useState(true);
   const [profilesLoading, setProfilesLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!session) {
@@ -25,23 +27,34 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setProfiles([]);
       setSeasonsLoading(false);
       setProfilesLoading(false);
+      setError(null);
       return;
     }
 
     async function fetchSeasons() {
       setSeasonsLoading(true);
-      const { data } = await supabase
+      const { data, error: err } = await supabase
         .from('seasons')
         .select('*')
         .order('start_date', { ascending: false });
-      setSeasons(data ?? []);
+      if (err) {
+        console.error('Failed to fetch seasons:', err.message);
+        setError(err.message);
+      } else {
+        setSeasons(data ?? []);
+      }
       setSeasonsLoading(false);
     }
 
     async function fetchProfiles() {
       setProfilesLoading(true);
-      const { data } = await supabase.from('profiles').select('*');
-      setProfiles(data ?? []);
+      const { data, error: err } = await supabase.from('profiles').select('*');
+      if (err) {
+        console.error('Failed to fetch profiles:', err.message);
+        setError(err.message);
+      } else {
+        setProfiles(data ?? []);
+      }
       setProfilesLoading(false);
     }
 
@@ -60,6 +73,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         seasons,
         profiles,
         loading: seasonsLoading || profilesLoading,
+        error,
         refetchProfiles,
       }}
     >
