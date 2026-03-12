@@ -1,8 +1,9 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useState, useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import ProtectedRoute from './components/ProtectedRoute'
 import Layout from './components/Layout'
+import ComboCelebration from './components/ComboCelebration'
 
 const LoginPage = lazy(() => import('./pages/LoginPage'))
 const SignUpPage = lazy(() => import('./pages/SignUpPage'))
@@ -20,8 +21,18 @@ function PageLoader() {
 }
 
 function App() {
+  const [showCombo, setShowCombo] = useState(false)
+
+  useEffect(() => {
+    (window as any).__triggerCombo = () => {
+      setShowCombo(true)
+    }
+    return () => { delete (window as any).__triggerCombo }
+  }, [])
+
   return (
     <Suspense fallback={<PageLoader />}>
+      {showCombo && <ComboCelebration onComplete={() => setShowCombo(false)} />}
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
