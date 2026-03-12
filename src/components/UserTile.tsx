@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, memo } from 'react';
+import { useState, useEffect, useCallback, memo, lazy, Suspense } from 'react';
 import {
   ChevronDown,
   ChevronUp,
@@ -8,11 +8,13 @@ import {
   Salad,
   Camera,
   TreePine,
+  Loader2,
 } from 'lucide-react';
 import type { Profile, DailyEntry } from '../types';
-import UserAnalytics from './UserAnalytics';
 import ComplianceBarrel from './ComplianceBarrel';
 import { calcCompliance } from '../lib/complianceCalc';
+
+const UserAnalytics = lazy(() => import('./UserAnalytics'));
 
 interface UserTileProps {
   profile: Profile;
@@ -236,7 +238,13 @@ function UserTile({ profile, entry, seasonId, seasonStartDate, seasonEntries }: 
 
       {expanded && (
         <div className="border-t border-neutral-800 p-4">
-          <UserAnalytics userId={profile.id} seasonId={seasonId} />
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-8">
+              <Loader2 size={24} className="animate-spin text-neutral-500" />
+            </div>
+          }>
+            <UserAnalytics userId={profile.id} seasonId={seasonId} />
+          </Suspense>
         </div>
       )}
     </div>

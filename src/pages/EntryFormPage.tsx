@@ -83,7 +83,7 @@ export default function EntryFormPage() {
         photoUrl = await uploadProgressPhoto(user.id, activeDate, formData.photo);
       }
 
-      await upsertDailyEntry({
+      const savedEntry = await upsertDailyEntry({
         ...(existingEntry?.id ? { id: existingEntry.id } : {}),
         user_id: user.id,
         season_id: activeSeason.id,
@@ -104,14 +104,11 @@ export default function EntryFormPage() {
         photo_url: photoUrl,
       });
 
-      // Re-fetch all entries for this date to check combo
-      const { data: freshEntries } = await supabase
-        .from('daily_entries')
-        .select('*')
-        .eq('season_id', activeSeason.id)
-        .eq('entry_date', activeDate);
-
-      const allEntries = freshEntries ?? [];
+      // Build current entries list from in-memory data + saved result (no extra query)
+      const allEntries = [
+        ...entries.filter((e) => e.user_id !== user.id),
+        savedEntry,
+      ];
       const comboKey = comboSeenKey(activeSeason.id, activeDate);
 
       if (isFullCombo(profiles, allEntries) && !localStorage.getItem(comboKey)) {
