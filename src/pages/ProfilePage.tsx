@@ -296,7 +296,7 @@ export default function ProfilePage() {
             type="date"
             value={seasonStart}
             onChange={(e) => setSeasonStart(e.target.value)}
-            className="w-full max-w-full rounded-lg border border-neutral-800 bg-black px-3 py-2.5 text-white focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+            className="w-full min-w-0 rounded-lg border border-neutral-800 bg-black px-3 py-2.5 text-white focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
           />
           <p className="text-xs text-neutral-500">End date is auto-calculated (75 days).</p>
         </div>
