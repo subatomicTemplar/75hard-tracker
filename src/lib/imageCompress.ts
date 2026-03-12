@@ -1,5 +1,6 @@
-const MAX_WIDTH = 800;
-const JPEG_QUALITY = 0.8;
+const MAX_DIMENSION = 800;
+const MAX_BYTES = 500 * 1024; // 500 KB
+const INITIAL_QUALITY = 0.85;
 
 export function compressImage(file: File): Promise<Blob> {
   return new Promise((resolve, reject) => {
@@ -12,10 +13,10 @@ export function compressImage(file: File): Promise<Blob> {
       let width = img.width;
       let height = img.height;
 
-      if (width > MAX_WIDTH) {
-        height = Math.round((height * MAX_WIDTH) / width);
-        width = MAX_WIDTH;
-      }
+      // Scale down so neither dimension exceeds MAX_DIMENSION
+      const scale = Math.min(1, MAX_DIMENSION / Math.max(width, height));
+      width = Math.round(width * scale);
+      height = Math.round(height * scale);
 
       const canvas = document.createElement('canvas');
       canvas.width = width;
@@ -29,17 +30,26 @@ export function compressImage(file: File): Promise<Blob> {
 
       ctx.drawImage(img, 0, 0, width, height);
 
-      canvas.toBlob(
-        (blob) => {
-          if (blob) {
-            resolve(blob);
-          } else {
-            reject(new Error('Failed to compress image'));
-          }
-        },
-        'image/jpeg',
-        JPEG_QUALITY
-      );
+      // Iteratively reduce quality to fit under 500KB
+      function tryCompress(quality: number) {
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('Failed to compress image'));
+              return;
+            }
+            if (blob.size > MAX_BYTES && quality > 0.3) {
+              tryCompress(quality - 0.1);
+            } else {
+              resolve(blob);
+            }
+          },
+          'image/jpeg',
+          quality
+        );
+      }
+
+      tryCompress(INITIAL_QUALITY);
     };
 
     img.onerror = () => {

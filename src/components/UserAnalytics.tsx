@@ -22,7 +22,7 @@ function LoadingSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="h-[250px] animate-pulse rounded-lg bg-slate-700/40" />
+        <div key={i} className="h-[250px] animate-pulse rounded-lg bg-neutral-800/40" />
       ))}
     </div>
   );
@@ -84,22 +84,22 @@ export default function UserAnalytics({ userId, seasonId }: UserAnalyticsProps) 
   if (loading) return <LoadingSkeleton />;
   if (error) return <p className="text-sm text-red-400">Error loading analytics: {error}</p>;
   if (entries.length === 0)
-    return <p className="text-sm text-slate-400">No entries yet for this season.</p>;
+    return <p className="text-sm text-neutral-400">No entries yet for this season.</p>;
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {/* Weight Over Time */}
-      <div className="rounded-lg bg-slate-800 p-3">
-        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+      <div className="rounded-lg bg-neutral-900/90 p-3">
+        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">
           Weight Over Time
         </h4>
         <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
           <LineChart data={weightData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-            <XAxis dataKey="date" tickFormatter={formatDateLabel} tick={{ fill: '#94a3b8', fontSize: 10 }} />
-            <YAxis domain={['dataMin - 5', 'dataMax + 5']} tick={{ fill: '#94a3b8', fontSize: 10 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#262626" />
+            <XAxis dataKey="date" tickFormatter={formatDateLabel} tick={{ fill: '#a3a3a3', fontSize: 10 }} />
+            <YAxis domain={['dataMin - 5', 'dataMax + 5']} tick={{ fill: '#a3a3a3', fontSize: 10 }} />
             <Tooltip
-              contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: 8 }}
+              contentStyle={{ backgroundColor: '#171717', border: '1px solid #262626', borderRadius: 8 }}
               labelFormatter={(v) => formatDateLabel(String(v))}
             />
             <Line type="monotone" dataKey="weight" stroke="#22c55e" strokeWidth={2} dot={false} />
@@ -108,17 +108,17 @@ export default function UserAnalytics({ userId, seasonId }: UserAnalyticsProps) 
       </div>
 
       {/* Water Per Day */}
-      <div className="rounded-lg bg-slate-800 p-3">
-        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+      <div className="rounded-lg bg-neutral-900/90 p-3">
+        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">
           Water Per Day
         </h4>
         <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
           <BarChart data={waterData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-            <XAxis dataKey="date" tickFormatter={formatDateLabel} tick={{ fill: '#94a3b8', fontSize: 10 }} />
-            <YAxis tick={{ fill: '#94a3b8', fontSize: 10 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#262626" />
+            <XAxis dataKey="date" tickFormatter={formatDateLabel} tick={{ fill: '#a3a3a3', fontSize: 10 }} />
+            <YAxis tick={{ fill: '#a3a3a3', fontSize: 10 }} />
             <Tooltip
-              contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: 8 }}
+              contentStyle={{ backgroundColor: '#171717', border: '1px solid #262626', borderRadius: 8 }}
               labelFormatter={(v) => formatDateLabel(String(v))}
             />
             <ReferenceLine y={128} stroke="#22c55e" strokeDasharray="4 2" label={{ value: '128oz', fill: '#22c55e', fontSize: 10 }} />
@@ -132,17 +132,17 @@ export default function UserAnalytics({ userId, seasonId }: UserAnalyticsProps) 
       </div>
 
       {/* Pages Read Per Day */}
-      <div className="rounded-lg bg-slate-800 p-3">
-        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+      <div className="rounded-lg bg-neutral-900/90 p-3">
+        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">
           Pages Read Per Day
         </h4>
         <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
           <BarChart data={pagesData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-            <XAxis dataKey="date" tickFormatter={formatDateLabel} tick={{ fill: '#94a3b8', fontSize: 10 }} />
-            <YAxis tick={{ fill: '#94a3b8', fontSize: 10 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#262626" />
+            <XAxis dataKey="date" tickFormatter={formatDateLabel} tick={{ fill: '#a3a3a3', fontSize: 10 }} />
+            <YAxis tick={{ fill: '#a3a3a3', fontSize: 10 }} />
             <Tooltip
-              contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: 8 }}
+              contentStyle={{ backgroundColor: '#171717', border: '1px solid #262626', borderRadius: 8 }}
               labelFormatter={(v) => formatDateLabel(String(v))}
             />
             <ReferenceLine y={10} stroke="#22c55e" strokeDasharray="4 2" label={{ value: '10pg', fill: '#22c55e', fontSize: 10 }} />
@@ -152,8 +152,8 @@ export default function UserAnalytics({ userId, seasonId }: UserAnalyticsProps) 
       </div>
 
       {/* Workout Types Breakdown */}
-      <div className="rounded-lg bg-slate-800 p-3">
-        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+      <div className="rounded-lg bg-neutral-900/90 p-3">
+        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-400">
           Workout Types
         </h4>
         <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
@@ -174,9 +174,9 @@ export default function UserAnalytics({ userId, seasonId }: UserAnalyticsProps) 
               ))}
             </Pie>
             <Tooltip
-              contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: 8 }}
+              contentStyle={{ backgroundColor: '#171717', border: '1px solid #262626', borderRadius: 8 }}
             />
-            <Legend wrapperStyle={{ fontSize: 10, color: '#94a3b8' }} />
+            <Legend wrapperStyle={{ fontSize: 10, color: '#a3a3a3' }} />
           </PieChart>
         </ResponsiveContainer>
       </div>

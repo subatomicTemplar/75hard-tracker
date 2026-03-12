@@ -40,17 +40,17 @@ export default function DateNavigator({ date, seasonStartDate, seasonEndDate, on
           type="button"
           disabled={!canGoBack}
           onClick={() => navigate(-1)}
-          className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-800 hover:text-slate-50 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-slate-400"
+          className="rounded-lg p-2 text-neutral-400 transition hover:bg-neutral-800 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-neutral-400"
           aria-label="Previous day"
         >
           <ChevronLeft size={20} />
         </button>
 
         <div className="text-center">
-          <p className="text-lg font-semibold text-slate-50">
+          <p className="text-lg font-semibold text-white">
             {format(current, 'MMMM d, yyyy')}
           </p>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-neutral-400">
             Day {dayNumber} of {Math.min(totalDays, 75)}
           </p>
         </div>
@@ -59,7 +59,7 @@ export default function DateNavigator({ date, seasonStartDate, seasonEndDate, on
           type="button"
           disabled={!canGoForward}
           onClick={() => navigate(1)}
-          className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-800 hover:text-slate-50 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-slate-400"
+          className="rounded-lg p-2 text-neutral-400 transition hover:bg-neutral-800 hover:text-white disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-neutral-400"
           aria-label="Next day"
         >
           <ChevronRight size={20} />
@@ -67,9 +67,9 @@ export default function DateNavigator({ date, seasonStartDate, seasonEndDate, on
       </div>
 
       {/* Progress bar */}
-      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-700">
+      <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-800">
         <div
-          className="h-full rounded-full bg-green-500 transition-all duration-300"
+          className="h-full rounded-full bg-red-600 transition-all duration-300"
           style={{ width: `${progressPct}%` }}
         />
       </div>

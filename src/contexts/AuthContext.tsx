@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import type { Profile } from '../types';
@@ -12,6 +12,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, displayName: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -37,8 +38,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let initialised = false;
+
     // Check for existing session on mount
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (initialised) return;
+      initialised = true;
       setSession(session);
       setUser(session?.user ?? null);
 
@@ -49,6 +54,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setLoading(false);
     });
+
+    // Safety timeout – stop loading after 5 s even if getSession hangs
+    const timeout = setTimeout(() => {
+      if (!initialised) {
+        initialised = true;
+        setLoading(false);
+      }
+    }, 5000);
 
     // Subscribe to auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -63,11 +76,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setProfile(null);
         }
 
-        setLoading(false);
+        // Only clear loading if the initial getSession hasn't done it yet
+        if (!initialised) {
+          initialised = true;
+          setLoading(false);
+        }
       }
     );
 
     return () => {
+      clearTimeout(timeout);
       subscription.unsubscribe();
     };
   }, []);
@@ -95,6 +113,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
   };
 
+  const refreshProfile = useCallback(async () => {
+    if (user) {
+      const p = await fetchProfile(user.id);
+      setProfile(p);
+    }
+  }, [user]);
+
   const resetPassword = async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
@@ -104,7 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, session, profile, loading, signIn, signUp, signOut, resetPassword }}
+      value={{ user, session, profile, loading, signIn, signUp, signOut, resetPassword, refreshProfile }}
     >
       {children}
     </AuthContext.Provider>

@@ -60,8 +60,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     })
   );
 
+  const fulfilled = results.filter((r) => r.status === 'fulfilled');
+  const sent = fulfilled.filter(
+    (r) => r.status === 'fulfilled' && r.value?.status === 'sent'
+  ).length;
+
   return res.status(200).json({
-    sent: results.filter((r) => r.status === 'fulfilled').length,
+    sent,
     total: subscriptions?.length || 0,
   });
 }

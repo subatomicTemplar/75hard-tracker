@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, LogOut, Bell, BellOff, Loader2, Save } from 'lucide-react';
+import { ArrowLeft, LogOut, Bell, BellOff, Loader2, Save, Plus } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useData } from '../contexts/DataContext';
 import { supabase } from '../lib/supabase';
+import { compressImage } from '../lib/imageCompress';
 import { subscribeToPush } from '../lib/pushNotifications';
+import { createSeason } from '../lib/api';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, refreshProfile } = useAuth();
+  const { refetchProfiles, refetchSeasons } = useData();
 
   const [displayName, setDisplayName] = useState(profile?.display_name ?? '');
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url ?? '');
@@ -15,6 +19,9 @@ export default function ProfilePage() {
   const [toast, setToast] = useState<string | null>(null);
   const [pushEnabled, setPushEnabled] = useState(false);
   const [pushLoading, setPushLoading] = useState(false);
+  const [seasonName, setSeasonName] = useState('');
+  const [seasonStart, setSeasonStart] = useState('');
+  const [creatingSeason, setCreatingSeason] = useState(false);
 
   // Sync form when profile loads
   useEffect(() => {
@@ -53,6 +60,9 @@ export default function ProfilePage() {
         .eq('id', user.id);
 
       if (error) throw error;
+
+      // Refresh profile data across the app
+      await Promise.all([refreshProfile(), refetchProfiles()]);
 
       showToast('Profile updated!');
     } catch (err) {
@@ -111,10 +121,11 @@ export default function ProfilePage() {
 
     setSaving(true);
     try {
-      const path = `${user.id}/avatar.${file.name.split('.').pop()}`;
+      const compressed = await compressImage(file);
+      const path = `${user.id}/avatar.jpg`;
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(path, file, { contentType: file.type, upsert: true });
+        .upload(path, compressed, { contentType: 'image/jpeg', upsert: true });
 
       if (uploadError) throw uploadError;
 
@@ -133,6 +144,23 @@ export default function ProfilePage() {
     }
   }
 
+  async function handleCreateSeason() {
+    if (!seasonName.trim() || !seasonStart) return;
+    setCreatingSeason(true);
+    try {
+      await createSeason(seasonName.trim(), seasonStart);
+      await refetchSeasons();
+      setSeasonName('');
+      setSeasonStart('');
+      showToast('Season created!');
+    } catch (err) {
+      console.error('Failed to create season:', err);
+      showToast('Failed to create season.');
+    } finally {
+      setCreatingSeason(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -140,12 +168,12 @@ export default function ProfilePage() {
         <button
           type="button"
           onClick={() => navigate('/')}
-          className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-800 hover:text-slate-50"
+          className="rounded-lg p-2 text-neutral-400 transition hover:bg-neutral-800 hover:text-white"
           aria-label="Back"
         >
           <ArrowLeft size={20} />
         </button>
-        <h1 className="text-lg font-bold text-slate-50">Profile</h1>
+        <h1 className="text-lg font-bold text-white">Profile</h1>
       </div>
 
       {/* Avatar preview */}
@@ -154,10 +182,10 @@ export default function ProfilePage() {
           <img
             src={avatarUrl}
             alt="Avatar"
-            className="h-24 w-24 rounded-full object-cover border-2 border-slate-700"
+            className="h-24 w-24 rounded-full object-cover border-2 border-neutral-800"
           />
         ) : (
-          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-slate-700 text-2xl font-bold text-slate-50">
+          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-neutral-800 text-2xl font-bold text-white">
             {displayName.charAt(0).toUpperCase() || '?'}
           </div>
         )}
@@ -167,7 +195,7 @@ export default function ProfilePage() {
       <div className="space-y-4">
         {/* Display name */}
         <div className="space-y-1.5">
-          <label htmlFor="displayName" className="block text-sm font-medium text-slate-300">
+          <label htmlFor="displayName" className="block text-sm font-medium text-neutral-300">
             Display Name
           </label>
           <input
@@ -175,13 +203,13 @@ export default function ProfilePage() {
             type="text"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2.5 text-slate-50 placeholder:text-slate-500 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+            className="w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2.5 text-white placeholder:text-white0 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
           />
         </div>
 
         {/* Avatar URL */}
         <div className="space-y-1.5">
-          <label htmlFor="avatarUrl" className="block text-sm font-medium text-slate-300">
+          <label htmlFor="avatarUrl" className="block text-sm font-medium text-neutral-300">
             Avatar URL
           </label>
           <input
@@ -190,14 +218,14 @@ export default function ProfilePage() {
             value={avatarUrl}
             onChange={(e) => setAvatarUrl(e.target.value)}
             placeholder="https://..."
-            className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2.5 text-slate-50 placeholder:text-slate-500 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+            className="w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2.5 text-white placeholder:text-white0 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
           />
-          <p className="text-xs text-slate-500">Or upload a file:</p>
+          <p className="text-xs text-white0">Or upload a file:</p>
           <input
             type="file"
             accept="image/*"
             onChange={handleAvatarUpload}
-            className="block w-full text-sm text-slate-400 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-700 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-slate-50 file:transition hover:file:bg-slate-600"
+            className="block w-full text-sm text-neutral-400 file:mr-3 file:rounded-lg file:border-0 file:bg-neutral-800 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white file:transition hover:file:bg-neutral-700"
           />
         </div>
 
@@ -206,7 +234,7 @@ export default function ProfilePage() {
           type="button"
           onClick={handleSave}
           disabled={saving || !displayName.trim()}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-green-500 py-3 font-bold text-slate-900 transition hover:bg-green-400 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 py-3 font-bold text-black transition hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {saving ? (
             <Loader2 size={18} className="animate-spin" />
@@ -218,15 +246,15 @@ export default function ProfilePage() {
       </div>
 
       {/* Push notifications */}
-      <div className="rounded-xl border border-slate-700 bg-slate-800 p-4">
+      <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {pushEnabled ? (
-              <Bell size={18} className="text-green-400" />
+              <Bell size={18} className="text-red-400" />
             ) : (
-              <BellOff size={18} className="text-slate-500" />
+              <BellOff size={18} className="text-white0" />
             )}
-            <span className="text-sm font-medium text-slate-50">Push Notifications</span>
+            <span className="text-sm font-medium text-white">Push Notifications</span>
           </div>
 
           <button
@@ -234,7 +262,7 @@ export default function ProfilePage() {
             onClick={handleTogglePush}
             disabled={pushLoading}
             className={`relative h-7 w-12 rounded-full transition-colors ${
-              pushEnabled ? 'bg-green-500' : 'bg-slate-600'
+              pushEnabled ? 'bg-red-600' : 'bg-neutral-700'
             }`}
             role="switch"
             aria-checked={pushEnabled}
@@ -252,6 +280,41 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {/* New Season */}
+      <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-4 space-y-3">
+        <h2 className="text-sm font-bold text-white">New Season</h2>
+        <div className="space-y-2">
+          <input
+            type="text"
+            placeholder="Season name (e.g. Spring 2026)"
+            value={seasonName}
+            onChange={(e) => setSeasonName(e.target.value)}
+            className="w-full rounded-lg border border-neutral-800 bg-black px-3 py-2.5 text-white placeholder:text-neutral-500 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+          />
+          <label className="block text-xs text-neutral-400">Start date</label>
+          <input
+            type="date"
+            value={seasonStart}
+            onChange={(e) => setSeasonStart(e.target.value)}
+            className="w-full min-w-0 rounded-lg border border-neutral-800 bg-black px-3 py-2.5 text-white focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+          />
+          <p className="text-xs text-neutral-500">End date is auto-calculated (75 days).</p>
+        </div>
+        <button
+          type="button"
+          onClick={handleCreateSeason}
+          disabled={creatingSeason || !seasonName.trim() || !seasonStart}
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-red-600 py-2.5 text-sm font-bold text-black transition hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {creatingSeason ? (
+            <Loader2 size={16} className="animate-spin" />
+          ) : (
+            <Plus size={16} />
+          )}
+          Create Season
+        </button>
+      </div>
+
       {/* Sign out */}
       <button
         type="button"
@@ -264,7 +327,7 @@ export default function ProfilePage() {
 
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-xl bg-green-500 px-5 py-3 text-sm font-medium text-slate-900 shadow-lg">
+        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-xl bg-red-600 px-5 py-3 text-sm font-medium text-black shadow-lg">
           {toast}
         </div>
       )}

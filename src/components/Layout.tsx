@@ -1,13 +1,24 @@
 import { Link, Outlet } from 'react-router-dom';
 import { Bell, User } from 'lucide-react';
 import CalendarDropdown from './CalendarDropdown';
+import PullToRefresh from './PullToRefresh';
+import { useRefresh } from '../contexts/RefreshContext';
+import { useNotificationBadge } from '../hooks/useNotificationBadge';
 
 export default function Layout() {
+  const { triggerRefresh } = useRefresh();
+  const { hasUnread, clearBadge } = useNotificationBadge();
+
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-50">
-      <header className="sticky top-0 z-50 border-b border-slate-700 bg-slate-900/95 backdrop-blur">
+    <div className="min-h-screen text-white">
+      {/* Fixed background image — stays still while content scrolls */}
+      <div
+        className="fixed inset-0 -z-10 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/background.webp')" }}
+      />
+      <header className="sticky top-0 z-50 border-b border-neutral-800 bg-black/90 backdrop-blur">
         <div className="mx-auto flex max-w-[640px] items-center justify-between px-4 py-3">
-          <Link to="/" className="text-xl font-extrabold tracking-widest text-green-500">
+          <Link to="/" className="fire-text text-2xl tracking-widest">
             75 HARD
           </Link>
 
@@ -16,15 +27,19 @@ export default function Layout() {
 
             <button
               type="button"
-              className="rounded-full p-2 text-slate-400 transition hover:bg-slate-800 hover:text-slate-50"
+              onClick={clearBadge}
+              className="relative rounded-full p-2 text-neutral-400 transition hover:bg-neutral-800 hover:text-white"
               aria-label="Notifications"
             >
               <Bell size={20} />
+              {hasUnread && (
+                <span className="absolute top-1.5 right-1.5 h-2.5 w-2.5 rounded-full bg-red-500" />
+              )}
             </button>
 
             <Link
               to="/profile"
-              className="rounded-full p-2 text-slate-400 transition hover:bg-slate-800 hover:text-slate-50"
+              className="rounded-full p-2 text-neutral-400 transition hover:bg-neutral-800 hover:text-white"
               aria-label="Profile"
             >
               <User size={20} />
@@ -34,7 +49,9 @@ export default function Layout() {
       </header>
 
       <main className="mx-auto max-w-[640px] px-4 py-4">
-        <Outlet />
+        <PullToRefresh onRefresh={triggerRefresh}>
+          <Outlet />
+        </PullToRefresh>
       </main>
     </div>
   );

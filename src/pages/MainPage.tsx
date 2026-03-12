@@ -1,18 +1,21 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Plus, Loader2 } from 'lucide-react';
 import SeasonPicker from '../components/SeasonPicker';
 import DateNavigator from '../components/DateNavigator';
 import UserTile from '../components/UserTile';
-import { useSeasons } from '../hooks/useSeasons';
-import { useProfiles } from '../hooks/useProfiles';
+import ComboCelebration from '../components/ComboCelebration';
+import { useData } from '../contexts/DataContext';
+import { useRefresh } from '../contexts/RefreshContext';
 import { useDailyEntries } from '../hooks/useDailyEntries';
+import { useSeasonEntries } from '../hooks/useSeasonEntries';
+import { isFullCombo, comboSeenKey } from '../lib/completionCheck';
 
 export default function MainPage() {
   const navigate = useNavigate();
-  const { seasons, loading: seasonsLoading } = useSeasons();
-  const { profiles, loading: profilesLoading } = useProfiles();
+  const { seasons, profiles, loading: dataLoading, refetchProfiles, refetchSeasons } = useData();
+  const { registerRefresh } = useRefresh();
 
   // Default to current season
   const currentSeason = useMemo(
@@ -51,13 +54,44 @@ export default function MainPage() {
   const effectiveSeasonId = activeSeason?.id;
 
   // Sync selectedSeasonId once seasons load
-  useMemo(() => {
+  useEffect(() => {
     if (currentSeason && !selectedSeasonId) {
       setSelectedSeasonId(currentSeason.id);
     }
-  }, [currentSeason]);
+  }, [currentSeason, selectedSeasonId]);
 
-  const { entries, loading: entriesLoading } = useDailyEntries(effectiveSeasonId, activeDate);
+  const { entries, loading: entriesLoading, refetch: refetchDailyEntries } = useDailyEntries(effectiveSeasonId, activeDate);
+  const { entries: allSeasonEntries, refetch: refetchSeasonEntries } = useSeasonEntries(effectiveSeasonId);
+
+  // Register pull-to-refresh handler
+  useEffect(() => {
+    registerRefresh(async () => {
+      await Promise.all([
+        refetchProfiles(),
+        refetchSeasons(),
+        refetchDailyEntries(),
+        refetchSeasonEntries(),
+      ]);
+    });
+  }, [registerRefresh, refetchProfiles, refetchSeasons, refetchDailyEntries, refetchSeasonEntries]);
+
+  // Combo celebration state
+  const [showCombo, setShowCombo] = useState(false);
+
+  // Check for unseen combo on load / when entries change
+  useEffect(() => {
+    if (!effectiveSeasonId || !activeDate || profiles.length === 0 || entries.length === 0) return;
+    const key = comboSeenKey(effectiveSeasonId, activeDate);
+    if (localStorage.getItem(key)) return;
+    if (isFullCombo(profiles, entries)) {
+      setShowCombo(true);
+      localStorage.setItem(key, '1');
+    }
+  }, [effectiveSeasonId, activeDate, profiles, entries]);
+
+  const handleComboComplete = useCallback(() => {
+    setShowCombo(false);
+  }, []);
 
   function handleSeasonChange(id: string) {
     setSelectedSeasonId(id);
@@ -73,12 +107,12 @@ export default function MainPage() {
     }
   }
 
-  const isLoading = seasonsLoading || profilesLoading;
+  const isLoading = dataLoading;
 
   if (isLoading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <Loader2 size={32} className="animate-spin text-green-500" />
+        <Loader2 size={32} className="animate-spin text-red-500" />
       </div>
     );
   }
@@ -86,8 +120,8 @@ export default function MainPage() {
   if (!activeSeason) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 text-center">
-        <p className="text-lg font-semibold text-slate-50">No Season Found</p>
-        <p className="text-sm text-slate-400">
+        <p className="text-lg font-semibold text-white">No Season Found</p>
+        <p className="text-sm text-neutral-400">
           There are no seasons configured yet. Ask an admin to create one.
         </p>
       </div>
@@ -95,54 +129,60 @@ export default function MainPage() {
   }
 
   return (
-    <div className="space-y-5">
-      {/* Season picker */}
-      <div className="flex items-center justify-between">
-        <SeasonPicker
-          seasons={seasons}
-          selectedSeasonId={activeSeason.id}
-          onChange={handleSeasonChange}
+    <>
+      {showCombo && <ComboCelebration onComplete={handleComboComplete} />}
+      <div className="space-y-5">
+        {/* Season picker */}
+        <div className="flex items-center justify-between">
+          <SeasonPicker
+            seasons={seasons}
+            selectedSeasonId={activeSeason.id}
+            onChange={handleSeasonChange}
+          />
+        </div>
+
+        {/* Date navigator */}
+        <DateNavigator
+          date={activeDate}
+          seasonStartDate={activeSeason.start_date}
+          seasonEndDate={activeSeason.end_date}
+          onChange={handleDateChange}
         />
+
+        {/* Log Today button */}
+        <button
+          type="button"
+          onClick={() => navigate(`/entry/${todayStr}`)}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 py-3 font-bold text-white transition hover:bg-red-500 active:scale-[0.98]"
+        >
+          <Plus size={20} />
+          Log Today
+        </button>
+
+        {/* User tiles */}
+        <div className="space-y-3">
+          {entriesLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 size={24} className="animate-spin text-neutral-500" />
+            </div>
+          ) : (
+            profiles.map((profile) => {
+              const entry = entries.find((e) => e.user_id === profile.id) ?? null;
+              const userSeasonEntries = allSeasonEntries.filter((e) => e.user_id === profile.id);
+              return (
+                <UserTile
+                  key={profile.id}
+                  profile={profile}
+                  entry={entry}
+                  seasonId={activeSeason.id}
+                  seasonStartDate={activeSeason.start_date}
+                  seasonEntries={userSeasonEntries}
+                />
+              );
+            })
+          )}
+        </div>
       </div>
-
-      {/* Date navigator */}
-      <DateNavigator
-        date={activeDate}
-        seasonStartDate={activeSeason.start_date}
-        seasonEndDate={activeSeason.end_date}
-        onChange={handleDateChange}
-      />
-
-      {/* Log Today button */}
-      <button
-        type="button"
-        onClick={() => navigate(`/entry/${todayStr}`)}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-green-500 py-3 font-bold text-slate-900 transition hover:bg-green-400 active:scale-[0.98]"
-      >
-        <Plus size={20} />
-        Log Today
-      </button>
-
-      {/* User tiles */}
-      <div className="space-y-3">
-        {entriesLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 size={24} className="animate-spin text-slate-500" />
-          </div>
-        ) : (
-          profiles.map((profile) => {
-            const entry = entries.find((e) => e.user_id === profile.id) ?? null;
-            return (
-              <UserTile
-                key={profile.id}
-                profile={profile}
-                entry={entry}
-                seasonId={activeSeason.id}
-              />
-            );
-          })
-        )}
-      </div>
-    </div>
+    </>
   );
 }

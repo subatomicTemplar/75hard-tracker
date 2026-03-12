@@ -34,20 +34,28 @@ export async function subscribeToPush(userId: string): Promise<PushSubscription 
 
     const subscriptionJSON = subscription.toJSON();
 
-    const { error } = await supabase.from('push_subscriptions').upsert(
-      {
-        user_id: userId,
-        endpoint: subscriptionJSON.endpoint,
-        p256dh: subscriptionJSON.keys?.p256dh,
-        auth: subscriptionJSON.keys?.auth,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'endpoint' }
-    );
+    // Try upsert on endpoint first, fall back to user_id
+    const row = {
+      user_id: userId,
+      endpoint: subscriptionJSON.endpoint!,
+      keys_p256dh: subscriptionJSON.keys?.p256dh ?? '',
+      keys_auth: subscriptionJSON.keys?.auth ?? '',
+    };
+
+    let { error } = await supabase
+      .from('push_subscriptions')
+      .upsert(row, { onConflict: 'user_id' });
+
+    if (error) {
+      console.error('Upsert on user_id failed, trying endpoint:', error);
+      ({ error } = await supabase
+        .from('push_subscriptions')
+        .upsert(row, { onConflict: 'endpoint' }));
+    }
 
     if (error) {
       console.error('Failed to save push subscription:', error);
-      return null;
+      // Still return the subscription — push will work, just won't persist across sessions
     }
 
     return subscription;

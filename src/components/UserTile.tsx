@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback, memo, lazy, Suspense } from 'react';
 import {
   ChevronDown,
   ChevronUp,
@@ -8,14 +8,20 @@ import {
   Salad,
   Camera,
   TreePine,
+  Loader2,
 } from 'lucide-react';
 import type { Profile, DailyEntry } from '../types';
-import UserAnalytics from './UserAnalytics';
+import ComplianceBarrel from './ComplianceBarrel';
+import { calcCompliance } from '../lib/complianceCalc';
+
+const UserAnalytics = lazy(() => import('./UserAnalytics'));
 
 interface UserTileProps {
   profile: Profile;
   entry: DailyEntry | null;
   seasonId: string;
+  seasonStartDate: string;
+  seasonEntries: DailyEntry[];
 }
 
 function getInitials(name: string): string {
@@ -52,10 +58,10 @@ function isPartial(e: DailyEntry): boolean {
 }
 
 function borderColor(entry: DailyEntry | null): string {
-  if (!entry) return 'border-slate-700';
-  if (isComplete(entry)) return 'border-green-500';
+  if (!entry) return 'border-neutral-800';
+  if (isComplete(entry)) return 'border-red-500';
   if (isPartial(entry)) return 'border-yellow-500';
-  return 'border-slate-700';
+  return 'border-neutral-800';
 }
 
 function workoutSummary(
@@ -70,11 +76,44 @@ function workoutSummary(
   return parts.join(' ');
 }
 
-export default function UserTile({ profile, entry, seasonId }: UserTileProps) {
+const EFFECTS = ['name-effect-flame', 'name-effect-glitch', 'name-effect-blackout'] as const;
+
+function useRandomNameEffect() {
+  const [effectClass, setEffectClass] = useState('');
+
+  const triggerEffect = useCallback(() => {
+    // 70% chance of no effect, 30% chance of one of the three
+    if (Math.random() > 0.3) return;
+    const effect = EFFECTS[Math.floor(Math.random() * EFFECTS.length)];
+    setEffectClass(effect);
+  }, []);
+
+  // Clear effect class when animation ends so it can re-trigger
+  const onAnimationEnd = useCallback(() => setEffectClass(''), []);
+
+  useEffect(() => {
+    // Random interval between 3-8 seconds, unique per tile
+    const schedule = () => {
+      const delay = 3000 + Math.random() * 5000;
+      return setTimeout(() => {
+        triggerEffect();
+        timerId = schedule();
+      }, delay);
+    };
+    let timerId = schedule();
+    return () => clearTimeout(timerId);
+  }, [triggerEffect]);
+
+  return { effectClass, onAnimationEnd };
+}
+
+function UserTile({ profile, entry, seasonId, seasonStartDate, seasonEntries }: UserTileProps) {
   const [expanded, setExpanded] = useState(false);
+  const { effectClass, onAnimationEnd } = useRandomNameEffect();
+  const compliance = calcCompliance(seasonEntries, seasonStartDate);
 
   return (
-    <div className={`overflow-hidden rounded-xl border-2 bg-slate-800 ${borderColor(entry)}`}>
+    <div className={`overflow-hidden rounded-xl border-2 bg-neutral-900/90 ${borderColor(entry)}`}>
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-4 pb-2">
         {profile.avatar_url ? (
@@ -84,11 +123,19 @@ export default function UserTile({ profile, entry, seasonId }: UserTileProps) {
             className="h-10 w-10 rounded-full object-cover"
           />
         ) : (
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-700 text-sm font-bold text-slate-50">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-800 text-sm font-bold text-white">
             {getInitials(profile.display_name)}
           </div>
         )}
-        <span className="text-lg font-semibold text-slate-50">{profile.display_name}</span>
+        <span
+          className={`name-fire-text text-lg tracking-wide ${effectClass}`}
+          onAnimationEnd={onAnimationEnd}
+        >
+          {profile.display_name}
+        </span>
+        <div className="ml-auto">
+          <ComplianceBarrel percentage={compliance} />
+        </div>
       </div>
 
       {/* Photo */}
@@ -97,11 +144,11 @@ export default function UserTile({ profile, entry, seasonId }: UserTileProps) {
           <img
             src={entry.photo_url}
             alt="Progress"
-            className="h-48 w-full rounded-lg object-cover"
+            className="aspect-[3/4] w-full rounded-lg object-cover"
           />
         ) : (
-          <div className="flex h-48 w-full items-center justify-center rounded-lg bg-slate-700/50">
-            <Camera size={32} className="text-slate-600" />
+          <div className="flex aspect-[3/4] w-full items-center justify-center rounded-lg bg-neutral-800/50">
+            <Camera size={32} className="text-neutral-600" />
           </div>
         )}
       </div>
@@ -110,14 +157,14 @@ export default function UserTile({ profile, entry, seasonId }: UserTileProps) {
       <div className="grid grid-cols-2 gap-2 px-4 py-2">
         {/* Weight */}
         <Stat
-          icon={<Dumbbell size={16} className="text-slate-400" />}
+          icon={<Dumbbell size={16} className="text-neutral-400" />}
           label="Weight"
           value={entry?.weight_lbs ? `${entry.weight_lbs} lbs` : '--'}
         />
 
         {/* Water */}
         <Stat
-          icon={<Droplets size={16} className="text-blue-500" />}
+          icon={<Droplets size={16} className="text-blue-400" />}
           label="Water"
           value={`${entry?.water_oz ?? 0} / 128 oz`}
           highlight={entry ? entry.water_oz >= 128 : false}
@@ -127,8 +174,8 @@ export default function UserTile({ profile, entry, seasonId }: UserTileProps) {
         <Stat
           icon={
             <span className="flex items-center gap-0.5">
-              <Dumbbell size={16} className="text-slate-400" />
-              {entry?.workout1_outdoor && <TreePine size={12} className="text-green-500" />}
+              <Dumbbell size={16} className="text-neutral-400" />
+              {entry?.workout1_outdoor && <TreePine size={12} className="text-red-500" />}
             </span>
           }
           label="Workout 1"
@@ -143,8 +190,8 @@ export default function UserTile({ profile, entry, seasonId }: UserTileProps) {
         <Stat
           icon={
             <span className="flex items-center gap-0.5">
-              <Dumbbell size={16} className="text-slate-400" />
-              {entry?.workout2_outdoor && <TreePine size={12} className="text-green-500" />}
+              <Dumbbell size={16} className="text-neutral-400" />
+              {entry?.workout2_outdoor && <TreePine size={12} className="text-red-500" />}
             </span>
           }
           label="Workout 2"
@@ -157,7 +204,7 @@ export default function UserTile({ profile, entry, seasonId }: UserTileProps) {
 
         {/* Pages */}
         <Stat
-          icon={<BookOpen size={16} className="text-slate-400" />}
+          icon={<BookOpen size={16} className="text-neutral-400" />}
           label="Reading"
           value={`${entry?.pages_read ?? 0} pages`}
           highlight={entry ? entry.pages_read >= 10 : false}
@@ -165,7 +212,7 @@ export default function UserTile({ profile, entry, seasonId }: UserTileProps) {
 
         {/* Diet */}
         <Stat
-          icon={<Salad size={16} className="text-slate-400" />}
+          icon={<Salad size={16} className="text-neutral-400" />}
           label="Diet"
           value={entry?.diet_followed ? 'Followed' : 'Not followed'}
           highlight={entry?.diet_followed ?? false}
@@ -176,7 +223,7 @@ export default function UserTile({ profile, entry, seasonId }: UserTileProps) {
       <button
         type="button"
         onClick={() => setExpanded((p) => !p)}
-        className="flex w-full items-center justify-center gap-1 border-t border-slate-700 py-2.5 text-sm text-slate-400 transition hover:bg-slate-700/40 hover:text-slate-50"
+        className="flex w-full items-center justify-center gap-1 border-t border-neutral-800 py-2.5 text-sm text-neutral-400 transition hover:bg-neutral-800/40 hover:text-white"
       >
         {expanded ? (
           <>
@@ -190,13 +237,21 @@ export default function UserTile({ profile, entry, seasonId }: UserTileProps) {
       </button>
 
       {expanded && (
-        <div className="border-t border-slate-700 p-4">
-          <UserAnalytics userId={profile.id} seasonId={seasonId} />
+        <div className="border-t border-neutral-800 p-4">
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-8">
+              <Loader2 size={24} className="animate-spin text-neutral-500" />
+            </div>
+          }>
+            <UserAnalytics userId={profile.id} seasonId={seasonId} />
+          </Suspense>
         </div>
       )}
     </div>
   );
 }
+
+export default memo(UserTile);
 
 function Stat({
   icon,
@@ -210,12 +265,12 @@ function Stat({
   highlight?: boolean;
 }) {
   return (
-    <div className="rounded-lg bg-slate-700/40 px-3 py-2">
+    <div className="rounded-lg bg-neutral-800/40 px-3 py-2">
       <div className="flex items-center gap-1.5">
         {icon}
-        <span className="text-xs text-slate-400">{label}</span>
+        <span className="text-xs text-neutral-400">{label}</span>
       </div>
-      <p className={`mt-0.5 text-sm font-medium ${highlight ? 'text-green-400' : 'text-slate-50'}`}>
+      <p className={`mt-0.5 text-sm font-medium ${highlight ? 'text-red-400' : 'text-white'}`}>
         {value}
       </p>
     </div>

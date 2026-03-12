@@ -2,13 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import type { DailyEntry } from '../types';
 
-export function useDailyEntries(seasonId: string | undefined, date: string | undefined) {
+export function useSeasonEntries(seasonId: string | undefined) {
   const [entries, setEntries] = useState<DailyEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchEntries = useCallback(async () => {
-    if (!seasonId || !date) {
+    if (!seasonId) {
       setEntries([]);
       setLoading(false);
       return;
@@ -21,7 +21,7 @@ export function useDailyEntries(seasonId: string | undefined, date: string | und
       .from('daily_entries')
       .select('*')
       .eq('season_id', seasonId)
-      .eq('entry_date', date);
+      .order('entry_date', { ascending: true });
 
     if (err) {
       setError(err.message);
@@ -30,18 +30,18 @@ export function useDailyEntries(seasonId: string | undefined, date: string | und
     }
 
     setLoading(false);
-  }, [seasonId, date]);
+  }, [seasonId]);
 
   useEffect(() => {
     fetchEntries();
   }, [fetchEntries]);
 
-  // Realtime subscription filtered by seasonId
+  // Realtime subscription
   useEffect(() => {
     if (!seasonId) return;
 
     const channel = supabase
-      .channel(`daily_entries:season_${seasonId}`)
+      .channel(`season_entries:${seasonId}`)
       .on(
         'postgres_changes',
         {
@@ -53,12 +53,10 @@ export function useDailyEntries(seasonId: string | undefined, date: string | und
         (payload) => {
           if (payload.eventType === 'INSERT') {
             const newEntry = payload.new as DailyEntry;
-            if (newEntry.entry_date === date) {
-              setEntries((prev) => {
-                const exists = prev.some((e) => e.id === newEntry.id);
-                return exists ? prev : [...prev, newEntry];
-              });
-            }
+            setEntries((prev) => {
+              const exists = prev.some((e) => e.id === newEntry.id);
+              return exists ? prev : [...prev, newEntry];
+            });
           } else if (payload.eventType === 'UPDATE') {
             const updated = payload.new as DailyEntry;
             setEntries((prev) =>
@@ -75,7 +73,7 @@ export function useDailyEntries(seasonId: string | undefined, date: string | und
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [seasonId, date]);
+  }, [seasonId]);
 
   return { entries, loading, error, refetch: fetchEntries };
 }
