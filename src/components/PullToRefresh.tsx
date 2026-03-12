@@ -3,7 +3,12 @@ import { RefreshCw } from 'lucide-react';
 
 const THRESHOLD = 80;
 
-export default function PullToRefresh({ children }: { children: ReactNode }) {
+interface PullToRefreshProps {
+  children: ReactNode;
+  onRefresh?: () => Promise<void>;
+}
+
+export default function PullToRefresh({ children, onRefresh }: PullToRefreshProps) {
   const [pullDistance, setPullDistance] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const startY = useRef(0);
@@ -20,24 +25,31 @@ export default function PullToRefresh({ children }: { children: ReactNode }) {
     if (!pulling.current) return;
     const delta = e.touches[0].clientY - startY.current;
     if (delta > 0) {
-      // Dampen the pull (feels more natural)
       setPullDistance(Math.min(delta * 0.4, 120));
     }
   }, []);
 
-  const onTouchEnd = useCallback(() => {
+  const onTouchEnd = useCallback(async () => {
     if (!pulling.current) return;
     pulling.current = false;
 
     if (pullDistance >= THRESHOLD) {
       setRefreshing(true);
       setPullDistance(THRESHOLD);
-      // Reload page after brief visual feedback
-      setTimeout(() => window.location.reload(), 300);
+      if (onRefresh) {
+        try {
+          await onRefresh();
+        } finally {
+          setRefreshing(false);
+          setPullDistance(0);
+        }
+      } else {
+        setTimeout(() => window.location.reload(), 300);
+      }
     } else {
       setPullDistance(0);
     }
-  }, [pullDistance]);
+  }, [pullDistance, onRefresh]);
 
   return (
     <div

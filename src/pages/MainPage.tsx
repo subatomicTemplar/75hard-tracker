@@ -7,12 +7,15 @@ import DateNavigator from '../components/DateNavigator';
 import UserTile from '../components/UserTile';
 import ComboCelebration from '../components/ComboCelebration';
 import { useData } from '../contexts/DataContext';
+import { useRefresh } from '../contexts/RefreshContext';
 import { useDailyEntries } from '../hooks/useDailyEntries';
+import { useSeasonEntries } from '../hooks/useSeasonEntries';
 import { isFullCombo, comboSeenKey } from '../lib/completionCheck';
 
 export default function MainPage() {
   const navigate = useNavigate();
-  const { seasons, profiles, loading: dataLoading } = useData();
+  const { seasons, profiles, loading: dataLoading, refetchProfiles, refetchSeasons } = useData();
+  const { registerRefresh } = useRefresh();
 
   // Default to current season
   const currentSeason = useMemo(
@@ -53,7 +56,20 @@ export default function MainPage() {
     }
   }, [currentSeason, selectedSeasonId]);
 
-  const { entries, loading: entriesLoading } = useDailyEntries(effectiveSeasonId, activeDate);
+  const { entries, loading: entriesLoading, refetch: refetchDailyEntries } = useDailyEntries(effectiveSeasonId, activeDate);
+  const { entries: allSeasonEntries, refetch: refetchSeasonEntries } = useSeasonEntries(effectiveSeasonId);
+
+  // Register pull-to-refresh handler
+  useEffect(() => {
+    registerRefresh(async () => {
+      await Promise.all([
+        refetchProfiles(),
+        refetchSeasons(),
+        refetchDailyEntries(),
+        refetchSeasonEntries(),
+      ]);
+    });
+  }, [registerRefresh, refetchProfiles, refetchSeasons, refetchDailyEntries, refetchSeasonEntries]);
 
   // Combo celebration state
   const [showCombo, setShowCombo] = useState(false);
@@ -143,6 +159,7 @@ export default function MainPage() {
           ) : (
             profiles.map((profile) => {
               const entry = entries.find((e) => e.user_id === profile.id) ?? null;
+              const userSeasonEntries = allSeasonEntries.filter((e) => e.user_id === profile.id);
               return (
                 <UserTile
                   key={profile.id}
@@ -150,6 +167,7 @@ export default function MainPage() {
                   entry={entry}
                   seasonId={activeSeason.id}
                   seasonStartDate={activeSeason.start_date}
+                  seasonEntries={userSeasonEntries}
                 />
               );
             })

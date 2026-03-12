@@ -334,7 +334,7 @@ export default function EntryForm({
             <img
               src={photoPreview}
               alt="Progress preview"
-              className="h-48 w-full rounded-lg object-cover"
+              className="aspect-[3/4] w-full rounded-lg object-cover"
             />
             <button
               type="button"

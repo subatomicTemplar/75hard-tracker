@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, memo } from 'react';
 import {
   ChevronDown,
   ChevronUp,
@@ -12,7 +12,6 @@ import {
 import type { Profile, DailyEntry } from '../types';
 import UserAnalytics from './UserAnalytics';
 import ComplianceBarrel from './ComplianceBarrel';
-import { useUserEntries } from '../hooks/useUserEntries';
 import { calcCompliance } from '../lib/complianceCalc';
 
 interface UserTileProps {
@@ -20,6 +19,7 @@ interface UserTileProps {
   entry: DailyEntry | null;
   seasonId: string;
   seasonStartDate: string;
+  seasonEntries: DailyEntry[];
 }
 
 function getInitials(name: string): string {
@@ -105,11 +105,10 @@ function useRandomNameEffect() {
   return { effectClass, onAnimationEnd };
 }
 
-export default function UserTile({ profile, entry, seasonId, seasonStartDate }: UserTileProps) {
+function UserTile({ profile, entry, seasonId, seasonStartDate, seasonEntries }: UserTileProps) {
   const [expanded, setExpanded] = useState(false);
   const { effectClass, onAnimationEnd } = useRandomNameEffect();
-  const { entries: allEntries } = useUserEntries(profile.id, seasonId);
-  const compliance = calcCompliance(allEntries, seasonStartDate);
+  const compliance = calcCompliance(seasonEntries, seasonStartDate);
 
   return (
     <div className={`overflow-hidden rounded-xl border-2 bg-neutral-900/90 ${borderColor(entry)}`}>
@@ -143,10 +142,10 @@ export default function UserTile({ profile, entry, seasonId, seasonStartDate }: 
           <img
             src={entry.photo_url}
             alt="Progress"
-            className="h-48 w-full rounded-lg object-cover"
+            className="aspect-[3/4] w-full rounded-lg object-cover"
           />
         ) : (
-          <div className="flex h-48 w-full items-center justify-center rounded-lg bg-neutral-800/50">
+          <div className="flex aspect-[3/4] w-full items-center justify-center rounded-lg bg-neutral-800/50">
             <Camera size={32} className="text-neutral-600" />
           </div>
         )}
@@ -243,6 +242,8 @@ export default function UserTile({ profile, entry, seasonId, seasonStartDate }: 
     </div>
   );
 }
+
+export default memo(UserTile);
 
 function Stat({
   icon,

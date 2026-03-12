@@ -49,9 +49,12 @@ export default function ComboCelebration({ onComplete }: ComboCelebrationProps) 
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80">
-      <img
-        src="/combo.gif"
-        alt="COMBO!"
+      <video
+        src="/combo.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
         className={`max-h-[80vh] max-w-[90vw] object-contain ${
           phase === 'grow' ? 'combo-grow' : 'combo-dust'
         }`}
