@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create:*)",
+      "Bash(npx create-vite@latest temp-scaffold --template react-ts 2>&1)",
+      "Bash(cp -r temp-scaffold/* . && cp temp-scaffold/.gitignore . 2>/dev/null; cp temp-scaffold/.eslintrc* . 2>/dev/null; rm -rf temp-scaffold && ls)",
+      "Bash(npm install:*)"
+    ]
+  }
+}

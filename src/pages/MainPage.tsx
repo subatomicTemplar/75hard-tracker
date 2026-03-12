@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Plus, Loader2 } from 'lucide-react';
 import SeasonPicker from '../components/SeasonPicker';
@@ -33,15 +33,19 @@ export default function MainPage() {
   // Clamp today's date to season range
   const todayStr = format(new Date(), 'yyyy-MM-dd');
 
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedDate, setSelectedDate] = useState<string>('');
+
+  // Sync from URL search param on mount / when it changes
+  const dateFromUrl = searchParams.get('date');
 
   const activeDate = useMemo(() => {
     if (!activeSeason) return todayStr;
-    const date = selectedDate || todayStr;
+    const date = dateFromUrl || selectedDate || todayStr;
     if (date < activeSeason.start_date) return activeSeason.start_date;
     if (date > activeSeason.end_date) return activeSeason.end_date;
     return date;
-  }, [activeSeason, selectedDate, todayStr]);
+  }, [activeSeason, selectedDate, dateFromUrl, todayStr]);
 
   // When season changes, pick the effective season id
   const effectiveSeasonId = activeSeason?.id;
@@ -62,6 +66,11 @@ export default function MainPage() {
 
   function handleDateChange(date: string) {
     setSelectedDate(date);
+    // Clear URL param so local state takes over
+    if (searchParams.has('date')) {
+      searchParams.delete('date');
+      setSearchParams(searchParams, { replace: true });
+    }
   }
 
   const isLoading = seasonsLoading || profilesLoading;

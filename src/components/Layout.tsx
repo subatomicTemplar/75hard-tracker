@@ -1,5 +1,6 @@
 import { Link, Outlet } from 'react-router-dom';
 import { Bell, User } from 'lucide-react';
+import CalendarDropdown from './CalendarDropdown';
 
 export default function Layout() {
   return (
@@ -11,6 +12,8 @@ export default function Layout() {
           </Link>
 
           <div className="flex items-center gap-3">
+            <CalendarDropdown />
+
             <button
               type="button"
               className="rounded-full p-2 text-slate-400 transition hover:bg-slate-800 hover:text-slate-50"
