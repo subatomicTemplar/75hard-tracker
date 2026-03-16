@@ -24,16 +24,17 @@ export default function ProfilePage() {
   const [seasonStart, setSeasonStart] = useState('');
   const [creatingSeason, setCreatingSeason] = useState(false);
   const [showCombo, setShowCombo] = useState(false);
-  const [tapCount, setTapCount] = useState(0);
-  const tapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const tapCountRef = useRef(0);
+  const tapTimeoutRef = useRef<number | null>(null);
 
-  // Sync form when profile loads
+  // Cleanup timeout on unmount
   useEffect(() => {
-    if (profile) {
-      setDisplayName(profile.display_name);
-      setAvatarUrl(profile.avatar_url ?? '');
-    }
-  }, [profile]);
+    return () => {
+      if (tapTimeoutRef.current) {
+        clearTimeout(tapTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Check current push subscription status
   useEffect(() => {
@@ -120,20 +121,20 @@ export default function ProfilePage() {
   }
 
   function handleTripleTap() {
-    setTapCount(prev => {
-      const newCount = prev + 1;
-      if (newCount === 3) {
-        setShowCombo(true);
-        return 0;
-      }
-      if (tapTimeoutRef.current) {
-        clearTimeout(tapTimeoutRef.current);
-      }
+    tapCountRef.current += 1;
+    
+    if (tapTimeoutRef.current) {
+      clearTimeout(tapTimeoutRef.current);
+    }
+    
+    if (tapCountRef.current >= 3) {
+      setShowCombo(true);
+      tapCountRef.current = 0;
+    } else {
       tapTimeoutRef.current = setTimeout(() => {
-        setTapCount(0);
+        tapCountRef.current = 0;
       }, 500);
-      return newCount;
-    });
+    }
   }
 
   async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
