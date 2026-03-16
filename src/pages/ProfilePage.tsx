@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, LogOut, Bell, BellOff, Loader2, Save, Plus } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase';
 import { compressImage } from '../lib/imageCompress';
 import { subscribeToPush } from '../lib/pushNotifications';
 import { createSeason } from '../lib/api';
+import ComboCelebration from '../components/ComboCelebration';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -22,6 +23,9 @@ export default function ProfilePage() {
   const [seasonName, setSeasonName] = useState('');
   const [seasonStart, setSeasonStart] = useState('');
   const [creatingSeason, setCreatingSeason] = useState(false);
+  const [showCombo, setShowCombo] = useState(false);
+  const [tapCount, setTapCount] = useState(0);
+  const tapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Sync form when profile loads
   useEffect(() => {
@@ -115,6 +119,23 @@ export default function ProfilePage() {
     setTimeout(() => setToast(null), 2500);
   }
 
+  function handleTripleTap() {
+    setTapCount(prev => {
+      const newCount = prev + 1;
+      if (newCount === 3) {
+        setShowCombo(true);
+        return 0;
+      }
+      if (tapTimeoutRef.current) {
+        clearTimeout(tapTimeoutRef.current);
+      }
+      tapTimeoutRef.current = setTimeout(() => {
+        setTapCount(0);
+      }, 500);
+      return newCount;
+    });
+  }
+
   async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !user) return;
@@ -162,7 +183,13 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="relative space-y-6">
+      {/* Hidden combo trigger button */}
+      <button
+        onClick={handleTripleTap}
+        className="absolute top-0 left-0 h-10 w-10 opacity-0"
+        aria-hidden="true"
+      />
       {/* Header */}
       <div className="flex items-center gap-3">
         <button
@@ -331,6 +358,9 @@ export default function ProfilePage() {
           {toast}
         </div>
       )}
+
+      {/* Combo Celebration */}
+      {showCombo && <ComboCelebration onComplete={() => setShowCombo(false)} />}
     </div>
   );
 }
