@@ -184,13 +184,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="relative space-y-6">
-      {/* Hidden combo trigger button */}
-      <button
-        onClick={handleTripleTap}
-        className="absolute top-0 left-0 h-10 w-10 opacity-0"
-        aria-hidden="true"
-      />
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <button
@@ -207,15 +201,25 @@ export default function ProfilePage() {
       {/* Avatar preview */}
       <div className="flex flex-col items-center gap-3">
         {avatarUrl ? (
-          <img
-            src={avatarUrl}
-            alt="Avatar"
-            className="h-24 w-24 rounded-full object-cover border-2 border-neutral-800"
-          />
+          <button
+            onClick={handleTripleTap}
+            className="focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-neutral-900 rounded-full"
+            aria-label="Profile picture - triple tap for combo"
+          >
+            <img
+              src={avatarUrl}
+              alt="Avatar"
+              className="h-24 w-24 rounded-full object-cover border-2 border-neutral-800 cursor-pointer hover:border-red-500 transition-colors"
+            />
+          </button>
         ) : (
-          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-neutral-800 text-2xl font-bold text-white">
+          <button
+            onClick={handleTripleTap}
+            className="flex h-24 w-24 items-center justify-center rounded-full bg-neutral-800 text-2xl font-bold text-white cursor-pointer hover:bg-red-900 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-neutral-900"
+            aria-label="Profile picture - triple tap for combo"
+          >
             {displayName.charAt(0).toUpperCase() || '?'}
-          </div>
+          </button>
         )}
       </div>
 
